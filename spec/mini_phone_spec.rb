@@ -16,8 +16,26 @@ RSpec.describe MiniPhone do
   end
 
   describe '.format_e164' do
-    it 'can format in e164' do
+    it 'formats the number' do
       expect(MiniPhone.format_e164('404-384-1384')).to eq('+14043841384')
+    end
+  end
+
+  describe '.format_national' do
+    it 'formats the number' do
+      expect(MiniPhone.format_national('404-384-1384')).to eq('(404) 384-1384')
+    end
+  end
+
+  describe '.format_international' do
+    it 'formats the number' do
+      expect(MiniPhone.format_international('404-384-1384')).to eq('+1 404-384-1384')
+    end
+  end
+
+  describe '.format_rfc3966' do
+    it 'formats the number' do
+      expect(MiniPhone.format_rfc3966('404-384-1384')).to eq('tel:+1-404-384-1384')
     end
   end
 
