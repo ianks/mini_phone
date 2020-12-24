@@ -15,6 +15,21 @@ RSpec.describe MiniPhone::PhoneNumber do
         MiniPhone::PhoneNumber.new(nil)
       end.to raise_error(TypeError)
     end
+
+    it 'allows for a region code to be specified' do
+      pn = MiniPhone::PhoneNumber.new('7911 123456', 'GB')
+
+      expect(pn.region_code).to eql('GB')
+    end
+  end
+
+  describe '#parse' do
+    it 'instantiates a MiniPhone::PhoneNUmber' do
+      pn = MiniPhone::PhoneNumber.parse('4043841384', 'US')
+
+      expect(pn).to be_a(MiniPhone::PhoneNumber)
+      expect(pn.region_code).to eql('US')
+    end
   end
 
   shared_examples :memoization do |method_name|
@@ -82,6 +97,42 @@ RSpec.describe MiniPhone::PhoneNumber do
     end
   end
 
+  describe '#type' do
+    [
+      ['+1 (800) 221-1212', :toll_free],
+      ['+12423570000', :mobile],
+      ['+12423651234', :fixed_line],
+      ['+16502531111', :fixed_line_or_mobile],
+      ['+445631231234', :voip],
+      ['+447031231234', :personal_number],
+      ['+165025311111', :unknown]
+    ].each do |num, type|
+      it "detects #{num.inspect} as #{type.inspect}" do
+        pn = MiniPhone::PhoneNumber.new(num)
+
+        expect(pn.type).to eq(type)
+      end
+    end
+
+    it 'specifies the type for a toll free number' do
+      pn = MiniPhone::PhoneNumber.new('+1 (800) 221-1212')
+
+      expect(pn.type).to eq(:toll_free)
+    end
+
+    it 'specifies the type for a mobile number' do
+      pn = MiniPhone::PhoneNumber.new('+12423570000')
+
+      expect(pn.type).to eq(:mobile)
+    end
+
+    it 'specifies the type for a fixed line number' do
+      pn = MiniPhone::PhoneNumber.new('+12423651234')
+
+      expect(pn.type).to eq(:fixed_line)
+    end
+  end
+
   describe '#==' do
     it 'is equal to another number which is logically the same' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1384')
@@ -91,6 +142,30 @@ RSpec.describe MiniPhone::PhoneNumber do
     it 'is not equal to another number which is logically different' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1385')
       expect(valid_phone_number).to eql(other)
+    end
+  end
+
+  describe 'fuzz testing' do
+    it 'does not cause any segfaults' do
+      Thread.abort_on_exception = true
+
+      threads = Array.new(10).map do
+        Thread.new do |_t|
+          Array.new(1000).map do
+            pn = MiniPhone::PhoneNumber.new('+1 404 384 1384')
+            pn.e164
+            pn.country_code
+            pn.valid?
+            pn.type
+            pn
+          end
+
+          GC.start
+          GC.compact
+        end
+      end
+
+      threads.map(&:join)
     end
   end
 end
