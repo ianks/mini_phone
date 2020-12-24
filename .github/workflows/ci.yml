@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        ruby: [ '2.5', '2.6', '2.7' ]
+        ruby: ["2.5", "2.6", "2.7"]
     name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
@@ -19,5 +19,6 @@ jobs:
           sudo apt-get -yqq install libphonenumber-dev
           gem install bundler
           bundle install --jobs 4 --retry 3
-      - run: bundle exec rake
+          bundle exec rake compile
+      - run: bundle exec rspec --format RSpec::Github::Formatter --format documentation
       - run: bundle exec rubocop --format github
