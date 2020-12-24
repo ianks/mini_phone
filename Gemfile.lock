@@ -26,6 +26,8 @@ GEM
     rspec-expectations (3.10.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
+    rspec-github (2.3.1)
+      rspec-core (~> 3.0)
     rspec-mocks (3.10.0)
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
@@ -52,7 +54,8 @@ DEPENDENCIES
   rake (~> 12.0)
   rake-compiler
   rspec (~> 3.0)
+  rspec-github
   rubocop
 
 BUNDLED WITH
-   2.1.4
+   2.2.3
