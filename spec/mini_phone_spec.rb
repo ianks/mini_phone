@@ -15,33 +15,22 @@ RSpec.describe MiniPhone do
     end
   end
 
-  describe '.format_e164' do
-    it 'formats the number' do
-      expect(MiniPhone.format_e164('404-384-1384')).to eq('+14043841384')
+  describe '.default_country_code=' do
+    around do |ex|
+      old = MiniPhone.default_country_code
+      ex.run
+    ensure
+      MiniPhone.default_country_code = old
     end
-  end
 
-  describe '.format_national' do
-    it 'formats the number' do
-      expect(MiniPhone.format_national('404-384-1384')).to eq('(404) 384-1384')
+    it 'configures the country code globally' do
+      MiniPhone.default_country_code = 'NZ'
+
+      expect(MiniPhone.valid?('4043841384')).to eq(false)
     end
-  end
 
-  describe '.format_international' do
-    it 'formats the number' do
-      expect(MiniPhone.format_international('404-384-1384')).to eq('+1 404-384-1384')
-    end
-  end
-
-  describe '.format_rfc3966' do
-    it 'formats the number' do
-      expect(MiniPhone.format_rfc3966('404-384-1384')).to eq('tel:+1-404-384-1384')
-    end
-  end
-
-  describe '.default_country_code' do
-    it 'defaults to US' do
-      expect(MiniPhone.default_country_code).to eq('US')
+    it 'defaults to unkown' do
+      expect(MiniPhone.default_country_code).to eql('ZZ')
     end
   end
 end
