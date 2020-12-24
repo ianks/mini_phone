@@ -136,7 +136,7 @@ RSpec.describe MiniPhone::PhoneNumber do
   describe '#==' do
     it 'is equal to another number which is logically the same' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1384')
-      expect(valid_phone_number).not_to eql(other)
+      expect(valid_phone_number).to eql(other)
     end
 
     it 'is not equal to another number which is logically different' do

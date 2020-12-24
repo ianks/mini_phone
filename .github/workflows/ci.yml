@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-16.04
     strategy:
       matrix:
-        ruby: [ '2.5', '2.6', '2.7' ]
+        ruby: ["2.5", "2.6", "2.7"]
     name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
