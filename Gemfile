@@ -9,3 +9,4 @@ gem 'rake', '~> 12.0'
 gem 'rake-compiler'
 gem 'rspec', '~> 3.0'
 gem 'rubocop'
+gem 'rspec-github', require: false
