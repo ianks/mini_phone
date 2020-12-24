@@ -10,6 +10,9 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["2.5", "2.6", "2.7", "truffleruby"]
+        include:
+          - ruby: "truffleruby"
+            experimental: true
     name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
