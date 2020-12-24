@@ -1,4 +1,8 @@
 ---
+name: CI
+
+on: push
+
 jobs:
   build:
     runs-on: ubuntu-16.04
@@ -15,5 +19,4 @@ jobs:
           sudo apt-get -yqq install libphonenumber
           gem install bundler
           bundle install --jobs 4 --retry 3
-      -
       - run: bundle exec rake
