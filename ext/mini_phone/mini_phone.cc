@@ -150,7 +150,7 @@ VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt)
 
 extern "C"
 VALUE rb_phone_number_e164(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@e164"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@e164")))) {
     return rb_iv_get(self, "@e164");
   }
 
@@ -158,7 +158,7 @@ VALUE rb_phone_number_e164(VALUE self) {
 }
 
 VALUE rb_phone_number_national(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@national"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@national")))) {
     return rb_iv_get(self, "@national");
   }
 
@@ -167,7 +167,7 @@ VALUE rb_phone_number_national(VALUE self) {
 
 extern "C"
 VALUE rb_phone_number_international(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@international"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@international")))) {
     return rb_iv_get(self, "@international");
   }
 
@@ -176,9 +176,10 @@ VALUE rb_phone_number_international(VALUE self) {
 
 extern "C"
 VALUE rb_phone_number_rfc3966(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@rfc3966"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@rfc3966")))) {
     return rb_iv_get(self, "@rfc3966");
   }
+
   return rb_iv_set(self, "@rfc3966", rb_phone_number_format(self, PhoneNumberUtil::PhoneNumberFormat::RFC3966));
 }
 
@@ -204,7 +205,7 @@ VALUE rb_phone_number_invalid_eh(VALUE self) {
 
 extern "C"
 VALUE rb_phone_number_region_code(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@region_code"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@region_code")))) {
     return rb_iv_get(self, "@region_code");
   }
 
@@ -222,7 +223,7 @@ VALUE rb_phone_number_region_code(VALUE self) {
 
 extern "C"
 VALUE rb_phone_number_country_code(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@country_code"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@country_code")))) {
     return rb_iv_get(self, "@country_code");
   }
 
@@ -263,7 +264,7 @@ VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
 
 extern "C"
 VALUE rb_phone_number_type(VALUE self) {
-  if (rb_ivar_defined(self, rb_str_new_cstr("@type"))) {
+  if (rb_ivar_defined(self, ID2SYM(rb_intern("@type")))) {
     return rb_iv_get(self, "@type");
   }
 

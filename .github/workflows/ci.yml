@@ -7,13 +7,14 @@ jobs:
   build:
     runs-on: ubuntu-16.04
     strategy:
+      fail-fast: false
       matrix:
-        ruby: ["2.5", "2.6", "2.7"]
+        ruby: ["2.5", "2.6", "2.7", "truffleruby"]
     name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
 
-      - uses: actions/setup-ruby@v1
+      - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
 
