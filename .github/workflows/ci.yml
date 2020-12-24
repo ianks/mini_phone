@@ -9,14 +9,14 @@ jobs:
     strategy:
       matrix:
         ruby: [ '2.5', '2.6', '2.7' ]
-    name: Ruby ${{ matrix.ruby }} sample
+    name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
       - run: |
-          sudo apt-get -yqq install libphonenumber
+          sudo apt-get -yqq install libphonenumber-dev
           gem install bundler
           bundle install --jobs 4 --retry 3
       - run: bundle exec rake
