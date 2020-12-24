@@ -12,13 +12,22 @@ jobs:
     name: Verify on ${{ matrix.ruby }}
     steps:
       - uses: actions/checkout@v2
+
       - uses: actions/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
-      - run: |
+
+      - name: Install dependencies
+        run: |
           sudo apt-get -yqq install libphonenumber-dev
           gem install bundler
           bundle install --jobs 4 --retry 3
-          bundle exec rake compile
-      - run: bundle exec rspec --format RSpec::Github::Formatter --format documentation
-      - run: bundle exec rubocop --format github
+
+      - name: Compile
+        run: bundle exec rake compile
+
+      - name: RSpec
+        run: bundle exec rspec --format RSpec::Github::Formatter --format documentation
+
+      - name: Rubocop
+        run: bundle exec rubocop --format github
