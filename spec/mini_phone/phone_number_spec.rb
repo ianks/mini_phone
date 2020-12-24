@@ -161,7 +161,7 @@ RSpec.describe MiniPhone::PhoneNumber do
           end
 
           GC.start
-          GC.compact
+          GC.compact if GC.respond_to?(:compact)
         end
       end
 
