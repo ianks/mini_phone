@@ -14,3 +14,9 @@ Rake::ExtensionTask.new('mini_phone') do |ext|
 end
 
 task default: %i[clobber compile spec]
+
+task bench: %i[clobber compile] do
+  Dir['bench/**/*'].each do |f|
+    require_relative f
+  end
+end

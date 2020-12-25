@@ -10,3 +10,8 @@ gem 'rake-compiler'
 gem 'rspec', '~> 3.0'
 gem 'rspec-github', require: false
 gem 'rubocop'
+
+group :bench do
+  gem 'benchmark-ips'
+  gem 'phonelib'
+end

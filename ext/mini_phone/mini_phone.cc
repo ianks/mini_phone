@@ -8,7 +8,13 @@ static VALUE rb_mMiniPhone;
 static VALUE rb_cPhoneNumber;
 
 extern "C"
-VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
+struct PhoneNumberInfo {
+  PhoneNumber phone_number;
+  std::string raw_phone_number;
+  std::string raw_country_code;
+};
+
+static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
   PhoneNumber parsed_number;
   PhoneNumberUtil* phone_util = PhoneNumberUtil::GetInstance();
 
@@ -80,13 +86,6 @@ VALUE rb_get_default_country_code(VALUE self) {
 }
 
 extern "C"
-struct PhoneNumberInfo {
-  PhoneNumber phone_number;
-  std::string raw_phone_number;
-  std::string raw_country_code;
-};
-
-extern "C"
 void rb_phone_number_dealloc(PhoneNumberInfo* phone_number_info) {
   delete phone_number_info;
 }
@@ -135,8 +134,7 @@ VALUE rb_phone_number_initialize(int argc, VALUE* argv, VALUE self) {
 	return self;
 }
 
-extern "C"
-VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt) {
+static inline VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt) {
   std::string formatted_number;
   PhoneNumberInfo* phone_number_info;
 	Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
@@ -157,6 +155,7 @@ VALUE rb_phone_number_e164(VALUE self) {
   return rb_iv_set(self, "@e164", rb_phone_number_format(self, PhoneNumberUtil::PhoneNumberFormat::E164));
 }
 
+extern "C"
 VALUE rb_phone_number_national(VALUE self) {
   if (rb_ivar_defined(self, ID2SYM(rb_intern("@national")))) {
     return rb_iv_get(self, "@national");
@@ -250,16 +249,11 @@ VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
 
   PhoneNumberInfo* other_phone_number_info;
 	Data_Get_Struct(other, PhoneNumberInfo, other_phone_number_info);
-
-  if (phone_util->IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
+ if (phone_util->IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
     return Qtrue;
   } else {
     return Qfalse;
   }
-
-  // int code = phone_number_info->phone_number.country_code();
-
-  // return INT2NUM(code);
 }  
 
 extern "C"
