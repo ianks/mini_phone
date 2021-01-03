@@ -45,7 +45,30 @@ end
 
 dir_config('mini_phone', header_dirs, lib_dirs)
 
-abort 'Missing libphonenumber library' unless have_library('phonenumber')
+unless have_library('phonenumberr')
+  abort <<~MSG
+
+    ,----------------------------------------------------------------------,
+    |                                                                      |
+    | Hey there, sorry for the inconvenience!                              |
+    |                                                                      |
+    | It looks like libphonenumber is not installed on this system. Don't  |
+    | worry, this should be easy to fix:                                   |
+    |                                                                      |
+    | 1. Install the lib                                                   |
+    |                                                                      |
+    |  On Mac:                                                             |
+    |    brew install libphonenumber                                       |
+    |                                                                      |
+    |  On Debian / Ubuntu:                                                 |
+    |    apt-get install -y libphonenumber                                 |
+    |                                                                      |
+    | 2. Retry installing the gem (i.e `bundle install`)                   |
+    |                                                                      |
+    '----------------------------------------------------------------------'
+
+  MSG
+end
 
 $CXXFLAGS += ' -std=c++11 '
 
