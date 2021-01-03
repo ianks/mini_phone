@@ -15,6 +15,20 @@ RSpec.describe MiniPhone do
     end
   end
 
+  describe '.parse' do
+    it 'returns a MiniPhone::PhoneNumber instance' do
+      pn = MiniPhone.parse('+14043841384')
+
+      expect(pn).to respond_to(:e164, :country_code)
+    end
+
+    it 'accepts a country code' do
+      pn = MiniPhone.parse('4043841384', 'US')
+
+      expect(pn).to respond_to(:e164, :country_code)
+    end
+  end
+
   describe '.valid_for_country?' do
     it 'returns true for valid phone numbers' do
       expect(MiniPhone.valid_for_country?('4043841384', 'US')).to eq(true)

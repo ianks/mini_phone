@@ -4,22 +4,28 @@ RSpec.describe MiniPhone::PhoneNumber do
   let(:valid_phone_number) { MiniPhone::PhoneNumber.new('+14043841384') }
 
   describe '#initialize' do
-    it 'raises an argument error when an unparseable phone number is passed in' do
+    it 'allows invalid numbers' do
       expect do
         MiniPhone::PhoneNumber.new('aaaa')
-      end.to raise_error(ArgumentError)
+      end.not_to raise_error
     end
 
-    it 'raises an argument error when nil is passed in' do
+    it 'does not raise an error with a nil phone number' do
       expect do
         MiniPhone::PhoneNumber.new(nil)
-      end.to raise_error(TypeError)
+      end.not_to raise_error
     end
 
     it 'allows for a region code to be specified' do
       pn = MiniPhone::PhoneNumber.new('7911 123456', 'GB')
 
       expect(pn.region_code).to eql('GB')
+    end
+
+    it 'can be initialized with a fixnum' do
+      pn = MiniPhone::PhoneNumber.new(4_043_841_384, 'US')
+
+      expect(pn.e164).to eql('+14043841384')
     end
   end
 
@@ -49,6 +55,44 @@ RSpec.describe MiniPhone::PhoneNumber do
       pn = MiniPhone::PhoneNumber.new('+9792423232345')
 
       expect(pn.valid?).to eq(false)
+    end
+  end
+
+  describe '#invalid?' do
+    it 'returns false for valid phone numbers' do
+      expect(valid_phone_number.invalid?).to eq(false)
+    end
+
+    it 'returns true for invalid phone numbers' do
+      pn = MiniPhone::PhoneNumber.new('+9792423232345')
+
+      expect(pn.invalid?).to eq(true)
+    end
+  end
+
+  describe '#possible?' do
+    include_examples :memoization, :possible?
+
+    it 'returns true for possible phone numbers' do
+      expect(valid_phone_number.possible?).to eq(true)
+    end
+
+    it 'returns false for impossible phone numbers' do
+      pn = MiniPhone::PhoneNumber.new('-12')
+
+      expect(pn.possible?).to eq(false)
+    end
+  end
+
+  describe '#impossible?' do
+    it 'returns true for possible phone numbers' do
+      expect(valid_phone_number.impossible?).to eq(false)
+    end
+
+    it 'returns false for impossible phone numbers' do
+      pn = MiniPhone::PhoneNumber.new('-12')
+
+      expect(pn.impossible?).to eq(true)
     end
   end
 
@@ -136,12 +180,27 @@ RSpec.describe MiniPhone::PhoneNumber do
   describe '#==' do
     it 'is equal to another number which is logically the same' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1384')
+
       expect(valid_phone_number).to eql(other)
     end
 
     it 'is not equal to another number which is logically different' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1385')
+
       expect(valid_phone_number).to eql(other)
+    end
+  end
+
+  context 'with a nil phone number' do
+    (MiniPhone::PhoneNumber.instance_methods(false) - %i[valid? eql? valid? invalid? possible?
+                                                         impossible?]).each do |method_name|
+      describe method_name do
+        it 'returns nil' do
+          pn = MiniPhone::PhoneNumber.new(nil)
+
+          expect(pn.__send__(method_name)).to be_nil
+        end
+      end
     end
   end
 

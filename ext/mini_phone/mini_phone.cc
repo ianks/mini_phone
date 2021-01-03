@@ -85,12 +85,30 @@ extern "C" void rb_phone_number_dealloc(PhoneNumberInfo *phone_number_info) {
   delete phone_number_info;
 }
 
+extern "C" VALUE rb_phone_number_parse(int argc, VALUE *argv, VALUE self) {
+  return rb_class_new_instance(argc, argv, rb_cPhoneNumber);
+}
+
 extern "C" VALUE rb_phone_number_alloc(VALUE self) {
   PhoneNumberInfo *phone_number_info = new PhoneNumberInfo();
 
   /* wrap */
   return Data_Wrap_Struct(self, NULL, &rb_phone_number_dealloc,
                           phone_number_info);
+}
+
+static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
+  rb_iv_set(self, "@national", Qnil);
+  rb_iv_set(self, "@international", Qnil);
+  rb_iv_set(self, "@e164", Qnil);
+  rb_iv_set(self, "@country_code", Qnil);
+  rb_iv_set(self, "@region_code", Qnil);
+  rb_iv_set(self, "@rfc3966", Qnil);
+  rb_iv_set(self, "@type", Qnil);
+  rb_iv_set(self, "@valid", Qfalse);
+  rb_iv_set(self, "@possible", Qfalse);
+
+  return Qtrue;
 }
 
 extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
@@ -103,9 +121,13 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
     def_cc = rb_iv_get(rb_mMiniPhone, "@default_country_code");
   }
 
-  Check_Type(str, T_STRING);
-
   rb_iv_set(self, "@input", str);
+
+  if (FIXNUM_P(str)) {
+    str = rb_fix2str(str, 10);
+  } else if (!RB_TYPE_P(str, T_STRING)) {
+    return rb_phone_number_nullify_ivars(self);
+  }
 
   PhoneNumberInfo *phone_number_info;
   PhoneNumber parsed_number;
@@ -120,7 +142,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
   auto result = phone_util->Parse(phone_number, country_code, &parsed_number);
 
   if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
-    rb_raise(rb_eArgError, "Could not parse phone number %s", RSTRING_PTR(str));
+    rb_phone_number_nullify_ivars(self);
   } else {
     phone_number_info->phone_number = parsed_number;
   }
@@ -142,7 +164,7 @@ rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt) {
 }
 
 extern "C" VALUE rb_phone_number_e164(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@e164")))) {
+  if (rb_ivar_defined(self, rb_intern("@e164"))) {
     return rb_iv_get(self, "@e164");
   }
 
@@ -152,7 +174,7 @@ extern "C" VALUE rb_phone_number_e164(VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_national(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@national")))) {
+  if (rb_ivar_defined(self, rb_intern("@national"))) {
     return rb_iv_get(self, "@national");
   }
 
@@ -162,7 +184,7 @@ extern "C" VALUE rb_phone_number_national(VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_international(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@international")))) {
+  if (rb_ivar_defined(self, rb_intern("@international"))) {
     return rb_iv_get(self, "@international");
   }
 
@@ -173,7 +195,7 @@ extern "C" VALUE rb_phone_number_international(VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_rfc3966(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@rfc3966")))) {
+  if (rb_ivar_defined(self, rb_intern("@rfc3966"))) {
     return rb_iv_get(self, "@rfc3966");
   }
 
@@ -183,6 +205,10 @@ extern "C" VALUE rb_phone_number_rfc3966(VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@valid"))) {
+    return rb_iv_get(self, "@valid");
+  }
+
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
@@ -190,9 +216,9 @@ extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
   PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
 
   if (phone_util->IsValidNumber(phone_number_info->phone_number)) {
-    return Qtrue;
+    return rb_iv_set(self, "@valid", Qtrue);
   } else {
-    return Qfalse;
+    return rb_iv_set(self, "@valid", Qfalse);
   }
 }
 
@@ -200,8 +226,30 @@ extern "C" VALUE rb_phone_number_invalid_eh(VALUE self) {
   return rb_phone_number_valid_eh(self) == Qtrue ? Qfalse : Qtrue;
 }
 
+extern "C" VALUE rb_phone_number_possible_eh(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@possible"))) {
+    return rb_iv_get(self, "@possible");
+  }
+
+  std::string formatted_number;
+  PhoneNumberInfo *phone_number_info;
+  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+
+  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+
+  if (phone_util->IsPossibleNumber(phone_number_info->phone_number)) {
+    return rb_iv_set(self, "@possible", Qtrue);
+  } else {
+    return rb_iv_set(self, "@possible", Qfalse);
+  }
+}
+
+extern "C" VALUE rb_phone_number_impossible_eh(VALUE self) {
+  return rb_phone_number_possible_eh(self) == Qtrue ? Qfalse : Qtrue;
+}
+
 extern "C" VALUE rb_phone_number_region_code(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@region_code")))) {
+  if (rb_ivar_defined(self, rb_intern("@region_code"))) {
     return rb_iv_get(self, "@region_code");
   }
 
@@ -219,7 +267,7 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_country_code(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@country_code")))) {
+  if (rb_ivar_defined(self, rb_intern("@country_code"))) {
     return rb_iv_get(self, "@country_code");
   }
 
@@ -254,7 +302,7 @@ extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
 }
 
 extern "C" VALUE rb_phone_number_type(VALUE self) {
-  if (rb_ivar_defined(self, ID2SYM(rb_intern("@type")))) {
+  if (rb_ivar_defined(self, rb_intern("@type"))) {
     return rb_iv_get(self, "@type");
   }
 
@@ -340,6 +388,9 @@ extern "C" void Init_mini_phone(void) {
   rb_define_module_function(
       rb_mMiniPhone, "default_country_code",
       reinterpret_cast<VALUE (*)(...)>(rb_get_default_country_code), 0);
+  rb_define_module_function(
+      rb_mMiniPhone, "parse",
+      reinterpret_cast<VALUE (*)(...)>(rb_phone_number_parse), -1);
 
   rb_cPhoneNumber =
       rb_define_class_under(rb_mMiniPhone, "PhoneNumber", rb_cObject);
@@ -357,6 +408,12 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "invalid?",
                    reinterpret_cast<VALUE (*)(...)>(rb_phone_number_invalid_eh),
                    0);
+  rb_define_method(
+      rb_cPhoneNumber, "possible?",
+      reinterpret_cast<VALUE (*)(...)>(rb_phone_number_possible_eh), 0);
+  rb_define_method(
+      rb_cPhoneNumber, "impossible?",
+      reinterpret_cast<VALUE (*)(...)>(rb_phone_number_impossible_eh), 0);
   rb_define_method(rb_cPhoneNumber, "e164",
                    reinterpret_cast<VALUE (*)(...)>(rb_phone_number_e164), 0);
   rb_define_method(rb_cPhoneNumber, "national",
