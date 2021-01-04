@@ -6,9 +6,9 @@ _fast_ and _robust_ phone number parsing, validation, and formatting. On
 average, most methods are 40x t0 50x faster than other Ruby phone number
 libraries.
 
-# Usage
+## Usage
 
-## Checking if a phone number is valid
+### Checking if a phone number is valid
 
 ```ruby
 MiniPhone.valid?('+14043841399')                     # true
@@ -16,7 +16,7 @@ MiniPhone.valid_for_country?('(404) 384-1399', 'US') # true
 MiniPhone.valid_for_country?('(404) 384-1399', 'GB') # false
 ```
 
-## Formatting a number
+### Formatting a number
 
 ```ruby
 MiniPhone.default_country = 'US'
@@ -29,7 +29,7 @@ phone_number.international # +1 404-384-1399
 phone_number.rfc3966       # tel:+1-404-384-1384
 ```
 
-## Checking if a phone number is possible
+### Checking if a phone number is possible
 
 ```ruby
 phone_number = MiniPhone.parse('-12')
@@ -37,7 +37,7 @@ phone_number = MiniPhone.parse('-12')
 phone_number.possible? # false
 ```
 
-## Getting the type of a phone number
+### Getting the type of a phone number
 
 ```ruby
 MiniPhone.parse('+12423570000').type # :mobile
@@ -62,7 +62,7 @@ enum](https://github.com/google/libphonenumber/blob/4e9954edea7cf263532c5dd3861a
 :unknown
 ```
 
-# Compatibility with PhoneLib
+## Compatibility with PhoneLib
 
 MiniPhone aims to be compatible with
 [Phonelib](https://github.com/daddyz/phonelib) so in many cases it can be a
@@ -70,7 +70,7 @@ drop in replacement. It has a smaller feature set, so if you need it it not a
 drop in replacement for every use case. If there is a feature you need, open
 an issue and we will try to support it.
 
-### Benchmarks
+## Benchmarks
 
 On average, most methods are 40x t0 50x faster than other libraries. To run
 the benchmarks locally, execute: `bundle exec rake bench`
