@@ -13,4 +13,6 @@ RSpec.configure do |config|
   config.expect_with :rspec do |c|
     c.syntax = :expect
   end
+
+  config.failure_exit_code = 0 if ENV['CI_EXPERIMENTAL']
 end
