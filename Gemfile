@@ -6,7 +6,7 @@ source 'https://rubygems.org'
 gemspec
 
 gem 'rake', '~> 12.0'
-gem 'rake-compiler'
+gem 'rake-compiler', github: 'larskanis/rake-compiler', branch: 'fix-native-version'
 gem 'rspec', '~> 3.0'
 gem 'rspec-github', require: false
 gem 'rubocop'

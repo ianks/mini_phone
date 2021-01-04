@@ -1,11 +1,11 @@
-/.bundle/
-/.yardoc
-/_yardoc/
-/coverage/
-/doc/
-/pkg/
-/spec/reports/
-/tmp/
+.bundle/
+.yardoc
+_yardoc/
+coverage/
+doc/
+pkg/
+spec/reports/
+tmp/
 *.bundle
 *.so
 *.o
@@ -15,3 +15,5 @@ mkmf.log
 # rspec failure tracking
 .rspec_status
 Gemfile.lock
+vendor/
+*.gem
