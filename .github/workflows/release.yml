@@ -1,5 +1,5 @@
 ---
-name: Publish
+name: Release
 
 on: push
 
@@ -36,7 +36,7 @@ jobs:
         run: gem install bundler && bundle install --jobs 4 --retry 3
 
       - name: Compile
-        run: bundle exec rake native
+        run: bundle exec rake native gem
 
       - name: Publish
         run: ls pkg/*.gem
