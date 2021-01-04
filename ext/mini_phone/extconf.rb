@@ -45,7 +45,7 @@ end
 
 dir_config('mini_phone', header_dirs, lib_dirs)
 
-unless have_library('phonenumberr')
+unless have_library('phonenumber')
   abort <<~MSG
 
     ,----------------------------------------------------------------------,
