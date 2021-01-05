@@ -15,5 +15,5 @@ mkmf.log
 # rspec failure tracking
 .rspec_status
 Gemfile.lock
-vendor/
+vendor/cache/
 *.gem
