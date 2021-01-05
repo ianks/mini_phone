@@ -36,11 +36,6 @@ task :deploy do
 end
 
 namespace :publish do
-  def push_to_github_registry(gem)
-    puts "Pushing #{gem} to GitHub Package Registry"
-    sh "gem push #{gem} --host https://rubygems.pkg.github.com/ianks --key github"
-  end
-
   def push_to_rubygems(gem)
     puts "Pushing #{gem} to Rubygems"
     sh "gem push #{gem}"
@@ -49,14 +44,12 @@ namespace :publish do
   task native: %i[native gem] do
     g = "./pkg/mini_phone-#{MiniPhone::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
 
-    push_to_github_registry(g)
     push_to_rubygems(g)
   end
 
   task non_native: [:gem] do
     g = "./pkg/mini_phone-#{MiniPhone::VERSION}.gem"
 
-    push_to_github_registry(g)
     push_to_rubygems(g)
   end
 end
