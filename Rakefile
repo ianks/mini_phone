@@ -28,6 +28,14 @@ task bench: %i[clobber compile] do
   end
 end
 
+task :deploy do
+  require 'mini_phone/version'
+
+  sh 'code -w ./lib/mini_phone/version.rb'
+  sh "git commit -am 'Bump to v#{MiniPhone::VERSION} :confetti_ball:'"
+  sh 'bundle exec rake release'
+end
+
 namespace :publish do
   def push_to_github_registry(gem)
     puts "Pushing #{gem} to GitHub Package Registry"
