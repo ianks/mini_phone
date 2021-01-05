@@ -32,7 +32,7 @@ task :deploy do
   sh 'code -w ./lib/mini_phone/version.rb'
   version = `ruby -r ./lib/mini_phone/version.rb -e 'print MiniPhone::VERSION'`.strip
   sh "git commit -am 'Bump to v#{version} :confetti_ball:'"
-  sh 'bundle exec rake release'
+  sh 'gem_push=no bundle exec rake release'
 end
 
 namespace :publish do
