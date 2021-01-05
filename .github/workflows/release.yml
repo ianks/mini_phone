@@ -37,10 +37,15 @@ jobs:
 
       - name: Login
         run: |
-          mkdir -p $HOME/.gem
-          touch $HOME/.gem/credentials
-          chmod 0600 $HOME/.gem/credentials
-          printf -- "---\n:github: ${GITHUB_AUTH_TOKEN}\n:rubygems_api_key: ${RUBYGEMS_AUTH_TOKEN}\n" > $HOME/.gem/credentials
+          mkdir -p ~/.gem
+
+          cat << EOF > ~/.gem/credentials
+          ---
+          :github: ${GITHUB_AUTH_TOKEN}
+          :rubygems_api_key: ${RUBYGEMS_AUTH_TOKEN}
+          EOF
+
+          chmod 0600 ~/.gem/credentials
         env:
           GITHUB_AUTH_TOKEN: "Bearer ${{secrets.GITHUB_TOKEN}}"
           RUBYGEMS_AUTH_TOKEN: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
