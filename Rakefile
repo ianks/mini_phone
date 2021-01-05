@@ -29,10 +29,9 @@ task bench: %i[clobber compile] do
 end
 
 task :deploy do
-  require 'mini_phone/version'
-
   sh 'code -w ./lib/mini_phone/version.rb'
-  sh "git commit -am 'Bump to v#{MiniPhone::VERSION} :confetti_ball:'"
+  version = `ruby -r ./lib/mini_phone/version.rb -e 'print MiniPhone::VERSION'`.strip
+  sh "git commit -am 'Bump to v#{version} :confetti_ball:'"
   sh 'bundle exec rake release'
 end
 
