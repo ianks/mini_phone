@@ -35,8 +35,18 @@ jobs:
       - name: Install dependencies (ruby)
         run: gem install bundler && bundle install --jobs 4 --retry 3
 
-      - name: Compile
-        run: bundle exec rake native gem
+      - name: Login
+        run: |
+          mkdir -p $HOME/.gem
+          touch $HOME/.gem/credentials
+          chmod 0600 $HOME/.gem/credentials
+          printf -- "---\n:github: ${GITHUB_AUTH_TOKEN}\n:rubygems_api_key: ${RUBYGEMS_AUTH_TOKEN}\n" > $HOME/.gem/credentials
+        env:
+          GITHUB_AUTH_TOKEN: "Bearer ${{secrets.GITHUB_TOKEN}}"
+          RUBYGEMS_AUTH_TOKEN: "${{secrets.RUBYGEMS_AUTH_TOKEN}}"
+          OWNER: ${{ github.repository_owner }}
 
-      - name: Publish
-        run: ls pkg/*.gem
+      - name: 🛳 Ship it
+        run: |
+          bundle exec rake publish:native
+          bundle exec rake publish:non_native || true
