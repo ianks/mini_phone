@@ -12,7 +12,12 @@ AllCops:
   TargetRubyVersion: 2.5
   NewCops: enable
   SuggestExtensions: false
+  Exclude:
+    - pkg/**/*
+    - tmp/**/*
 
 Metrics/BlockLength:
   Exclude:
     - spec/**/*
+    - Rakefile
+    - Gemfile
