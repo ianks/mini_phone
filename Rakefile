@@ -36,9 +36,22 @@ task :deploy do
 end
 
 namespace :publish do
+  def push_to_github_registry(gem)
+    puts "Pushing #{gem} to GitHub Package Registry"
+    sh "gem push #{gem} --host https://rubygems.pkg.github.com/ianks --key github"
+    true
+  rescue StandardError
+    warn 'Could not publish to Github Package Registry'
+    false
+  end
+
   def push_to_rubygems(gem)
-    puts "Pushing #{gem} to Rubygems"
+    puts "Pushing #{gem} to rubygems"
     sh "gem push #{gem}"
+    true
+  rescue StandardError
+    warn 'Could not publish to rubygems'
+    false
   end
 
   task native: %i[native gem] do
@@ -50,6 +63,11 @@ namespace :publish do
   task non_native: [:gem] do
     g = "./pkg/mini_phone-#{MiniPhone::VERSION}.gem"
 
-    push_to_rubygems(g)
+    results = []
+
+    results << push_to_rubygems(g)
+    results << push_to_github_registry(g)
+
+    abort if results.all? { |r| r == true }
   end
 end
