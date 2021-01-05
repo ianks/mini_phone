@@ -40,14 +40,14 @@ namespace :publish do
   end
 
   task native: %i[native gem] do
-    g = "./pkg/mini_phone-0.1.0-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
+    g = "./pkg/mini_phone-#{MiniPhone::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
 
     push_to_github_registry(g)
     push_to_rubygems(g)
   end
 
   task non_native: [:gem] do
-    g = './pkg/mini_phone-0.1.0.gem'
+    g = "./pkg/mini_phone-#{MiniPhone::VERSION}.gem"
 
     push_to_github_registry(g)
     push_to_rubygems(g)
