@@ -30,7 +30,7 @@ static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
 }
 
 extern "C" VALUE rb_is_phone_number_valid(VALUE self, VALUE str) {
-  VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country_code");
+  VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
 
   return is_phone_number_valid(self, str, def_cc);
 }
@@ -51,7 +51,7 @@ extern "C" VALUE rb_is_phone_number_possible(VALUE self, VALUE str) {
   PhoneNumber parsed_number;
   PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
 
-  VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country_code");
+  VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
   std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
   std::string country_code(RSTRING_PTR(def_cc), RSTRING_LEN(def_cc));
 
@@ -68,11 +68,11 @@ extern "C" VALUE rb_is_phone_number_impossible(VALUE self, VALUE str) {
   return rb_is_phone_number_possible(self, str) == Qtrue ? Qfalse : Qtrue;
 }
 
-extern "C" VALUE rb_set_default_country_code(VALUE self, VALUE str_code) {
-  return rb_iv_set(self, "@default_country_code", str_code);
+extern "C" VALUE rb_set_default_country(VALUE self, VALUE str_code) {
+  return rb_iv_set(self, "@default_country", str_code);
 }
 
-extern "C" VALUE rb_get_default_country_code(VALUE self) { return rb_iv_get(self, "@default_country_code"); }
+extern "C" VALUE rb_get_default_country(VALUE self) { return rb_iv_get(self, "@default_country"); }
 
 extern "C" void rb_phone_number_dealloc(PhoneNumberInfo *phone_number_info) { delete phone_number_info; }
 
@@ -108,7 +108,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
   rb_scan_args(argc, argv, "11", &str, &def_cc);
 
   if (NIL_P(def_cc)) {
-    def_cc = rb_iv_get(rb_mMiniPhone, "@default_country_code");
+    def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
   }
 
   rb_iv_set(self, "@input", str);
@@ -339,7 +339,7 @@ extern "C" void Init_mini_phone(void) {
   rb_mMiniPhone = rb_define_module("MiniPhone");
 
   // Unknown
-  rb_iv_set(rb_mMiniPhone, "@default_country_code", rb_str_new("ZZ", 2));
+  rb_iv_set(rb_mMiniPhone, "@default_country", rb_str_new("ZZ", 2));
 
   rb_define_module_function(rb_mMiniPhone, "valid?", reinterpret_cast<VALUE (*)(...)>(rb_is_phone_number_valid), 1);
   rb_define_module_function(rb_mMiniPhone, "valid_for_country?",
@@ -351,9 +351,9 @@ extern "C" void Init_mini_phone(void) {
   rb_define_module_function(rb_mMiniPhone, "impossible?", reinterpret_cast<VALUE (*)(...)>(rb_is_phone_number_invalid),
                             1);
   rb_define_module_function(rb_mMiniPhone,
-                            "default_country_code=", reinterpret_cast<VALUE (*)(...)>(rb_set_default_country_code), 1);
-  rb_define_module_function(rb_mMiniPhone, "default_country_code",
-                            reinterpret_cast<VALUE (*)(...)>(rb_get_default_country_code), 0);
+                            "default_country=", reinterpret_cast<VALUE (*)(...)>(rb_set_default_country), 1);
+  rb_define_module_function(rb_mMiniPhone, "default_country",
+                            reinterpret_cast<VALUE (*)(...)>(rb_get_default_country), 0);
   rb_define_module_function(rb_mMiniPhone, "parse", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_parse), -1);
 
   rb_cPhoneNumber = rb_define_class_under(rb_mMiniPhone, "PhoneNumber", rb_cObject);

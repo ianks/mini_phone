@@ -69,22 +69,22 @@ RSpec.describe MiniPhone do
     end
   end
 
-  describe '.default_country_code=' do
+  describe '.default_country=' do
     around do |ex|
-      old = MiniPhone.default_country_code
+      old = MiniPhone.default_country
       ex.run
     ensure
-      MiniPhone.default_country_code = old
+      MiniPhone.default_country = old
     end
 
     it 'configures the country code globally' do
-      MiniPhone.default_country_code = 'NZ'
+      MiniPhone.default_country = 'NZ'
 
       expect(MiniPhone.valid?('4043841384')).to eq(false)
     end
 
     it 'defaults to unkown' do
-      expect(MiniPhone.default_country_code).to eql('ZZ')
+      expect(MiniPhone.default_country).to eql('ZZ')
     end
   end
 end
