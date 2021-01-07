@@ -5,11 +5,12 @@ source 'https://rubygems.org'
 # Specify your gem's dependencies in mini_phone.gemspec
 gemspec
 
-gem 'rake', '~> 12.0'
+gem 'rake', require: false
+# https://github.com/rake-compiler/rake-compiler/pull/166
 gem 'rake-compiler', github: 'larskanis/rake-compiler', branch: 'fix-native-version'
-gem 'rspec', '~> 3.0'
+gem 'rspec', '~> 3.0', require: false
 gem 'rspec-github', require: false
-gem 'rubocop'
+gem 'rubocop', require: false
 
 group :bench do
   gem 'benchmark-ips'
