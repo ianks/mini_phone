@@ -12,9 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         ruby: ["2.7"]
-        os: [ubuntu-latest, macos-latest]
-    name: ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
@@ -23,12 +21,7 @@ jobs:
           ruby-version: ${{ matrix.ruby }}
 
       - name: Install dependencies (system)
-        if: ${{ matrix.os == 'ubuntu-latest' }}
         run: sudo apt-get -yqq install libphonenumber-dev
-
-      - name: Install dependencies (system)
-        if: ${{ matrix.os == 'macos-latest' }}
-        run: brew install --build-from-source libphonenumber && brew link libphonenumber
 
       - name: Install dependencies (ruby)
         run: gem install bundler && bundle install --jobs 4 --retry 3
@@ -51,5 +44,4 @@ jobs:
 
       - name: 🛳 Ship it
         run: |
-          bundle exec rake publish:native
-          bundle exec rake publish:non_native || true
+          bundle exec rake publish:non_native
