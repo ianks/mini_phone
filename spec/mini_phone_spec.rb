@@ -13,6 +13,10 @@ RSpec.describe MiniPhone do
     it 'returns false for invalid phone numbers' do
       expect(MiniPhone.valid?('-12')).to eq(false)
     end
+
+    it 'handles nil' do
+      expect(MiniPhone.valid?(nil)).to eq(false)
+    end
   end
 
   describe '.parse' do
@@ -57,6 +61,10 @@ RSpec.describe MiniPhone do
     it 'returns false for invalid phone numbers' do
       expect(MiniPhone.possible?('-12')).to eq(false)
     end
+
+    it 'handles nil' do
+      expect(MiniPhone.possible?(nil)).to eq(false)
+    end
   end
 
   describe '.impossible?' do
@@ -66,6 +74,10 @@ RSpec.describe MiniPhone do
 
     it 'returns true for impossible phone numbers' do
       expect(MiniPhone.impossible?('-12')).to eq(true)
+    end
+
+    it 'handles nil' do
+      expect(MiniPhone.impossible?(nil)).to eq(true)
     end
   end
 
@@ -85,6 +97,22 @@ RSpec.describe MiniPhone do
 
     it 'defaults to unkown' do
       expect(MiniPhone.default_country).to eql('ZZ')
+    end
+
+    it 'handles nil' do
+      MiniPhone.default_country = nil
+
+      expect(MiniPhone.default_country).to eql('ZZ')
+    end
+  end
+
+  describe '.normalize_digits_only' do
+    it 'handles nil values' do
+      expect(MiniPhone.normalize_digits_only(nil)).to eq(nil)
+    end
+
+    it 'normalizes phone numbers' do
+      expect(MiniPhone.normalize_digits_only('034-56&+a#234')).to eq('03456234')
     end
   end
 end

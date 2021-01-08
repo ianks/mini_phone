@@ -137,15 +137,34 @@ RSpec.describe MiniPhone::PhoneNumber do
   end
 
   describe '#region_code' do
+    include_examples :memoization, :region_code
+
     it 'specifies the country code' do
-      expect(valid_phone_number.region_code).to eq('US')
       expect(valid_phone_number.region_code).to eq('US')
     end
   end
 
+  describe '#country' do
+    include_examples :memoization, :country
+
+    it 'specifies the country code' do
+      expect(valid_phone_number.country).to eq('US')
+    end
+  end
+
   describe '#country_code' do
+    include_examples :memoization, :country_code
+
     it 'specifies the country code' do
       expect(valid_phone_number.country_code).to eq(1)
+    end
+  end
+
+  describe '#area_code' do
+    include_examples :memoization, :area_code
+
+    it 'specifies the country code' do
+      expect(valid_phone_number.area_code).to eq('404')
     end
   end
 

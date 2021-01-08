@@ -20,15 +20,19 @@ extern "C" struct PhoneNumberInfo {
 };
 
 static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
+  if (NIL_P(str) || NIL_P(cc)) {
+    return Qfalse;
+  }
+
   PhoneNumber parsed_number;
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
   std::string country_code(RSTRING_PTR(cc), RSTRING_LEN(cc));
 
-  auto result = phone_util->ParseAndKeepRawInput(phone_number, country_code, &parsed_number);
+  auto result = phone_util.ParseAndKeepRawInput(phone_number, country_code, &parsed_number);
 
-  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util->IsValidNumber(parsed_number)) {
+  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util.IsValidNumber(parsed_number)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -39,6 +43,20 @@ extern "C" VALUE rb_is_phone_number_valid(VALUE self, VALUE str) {
   VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
 
   return is_phone_number_valid(self, str, def_cc);
+}
+
+extern "C" VALUE rb_normalize_digits_only(VALUE self, VALUE str) {
+  if (NIL_P(str)) {
+    return Qnil;
+  }
+
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
+
+  std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
+
+  phone_util.NormalizeDigitsOnly(&phone_number);
+
+  return rb_str_new(phone_number.c_str(), phone_number.size());
 }
 
 extern "C" VALUE rb_is_phone_number_valid_for_country(VALUE self, VALUE str, VALUE cc) {
@@ -54,16 +72,20 @@ extern "C" VALUE rb_is_phone_number_invalid_for_country(VALUE self, VALUE str, V
 }
 
 extern "C" VALUE rb_is_phone_number_possible(VALUE self, VALUE str) {
+  if (NIL_P(str)) {
+    return Qnil;
+  }
+
   PhoneNumber parsed_number;
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   VALUE def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
   std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
   std::string country_code(RSTRING_PTR(def_cc), RSTRING_LEN(def_cc));
 
-  auto result = phone_util->Parse(phone_number, country_code, &parsed_number);
+  auto result = phone_util.Parse(phone_number, country_code, &parsed_number);
 
-  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util->IsPossibleNumber(parsed_number)) {
+  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util.IsPossibleNumber(parsed_number)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -75,6 +97,10 @@ extern "C" VALUE rb_is_phone_number_impossible(VALUE self, VALUE str) {
 }
 
 extern "C" VALUE rb_set_default_country(VALUE self, VALUE str_code) {
+  if (NIL_P(str_code)) {
+    str_code = rb_str_new("ZZ", 2);
+  }
+
   return rb_iv_set(self, "@default_country", str_code);
 }
 
@@ -104,6 +130,7 @@ static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
   rb_iv_set(self, "@type", Qnil);
   rb_iv_set(self, "@valid", Qfalse);
   rb_iv_set(self, "@possible", Qfalse);
+  rb_iv_set(self, "@area_code", Qnil);
 
   return Qtrue;
 }
@@ -131,12 +158,12 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
 
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
   std::string country_code(RSTRING_PTR(def_cc), RSTRING_LEN(def_cc));
 
-  auto result = phone_util->Parse(phone_number, country_code, &parsed_number);
+  auto result = phone_util.Parse(phone_number, country_code, &parsed_number);
 
   if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
     rb_phone_number_nullify_ivars(self);
@@ -152,9 +179,9 @@ static inline VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNum
   PhoneNumberInfo *phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   PhoneNumber parsed_number = phone_number_info->phone_number;
-  phone_util->Format(parsed_number, fmt, &formatted_number);
+  phone_util.Format(parsed_number, fmt, &formatted_number);
 
   return rb_str_new(formatted_number.c_str(), formatted_number.size());
 }
@@ -199,11 +226,11 @@ extern "C" VALUE rb_phone_number_raw_national(VALUE self) {
 
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  phone_util->FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, raw_national_format,
-                              &formatted_number);
+  phone_util.FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, raw_national_format,
+                             &formatted_number);
 
   VALUE result = rb_str_new(formatted_number.c_str(), formatted_number.size());
 
@@ -219,9 +246,9 @@ extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  if (phone_util->IsValidNumber(phone_number_info->phone_number)) {
+  if (phone_util.IsValidNumber(phone_number_info->phone_number)) {
     return rb_iv_set(self, "@valid", Qtrue);
   } else {
     return rb_iv_set(self, "@valid", Qfalse);
@@ -241,9 +268,9 @@ extern "C" VALUE rb_phone_number_possible_eh(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  if (phone_util->IsPossibleNumber(phone_number_info->phone_number)) {
+  if (phone_util.IsPossibleNumber(phone_number_info->phone_number)) {
     return rb_iv_set(self, "@possible", Qtrue);
   } else {
     return rb_iv_set(self, "@possible", Qfalse);
@@ -262,9 +289,9 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   std::string code;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  phone_util->GetRegionCodeForCountryCode(phone_number_info->phone_number.country_code(), &code);
+  phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number.country_code(), &code);
 
   VALUE result = rb_str_new(code.c_str(), code.size());
 
@@ -291,14 +318,14 @@ extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
     return Qfalse;
   }
 
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   PhoneNumberInfo *self_phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, self_phone_number_info);
 
   PhoneNumberInfo *other_phone_number_info;
   Data_Get_Struct(other, PhoneNumberInfo, other_phone_number_info);
-  if (phone_util->IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
+  if (phone_util.IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -312,13 +339,13 @@ extern "C" VALUE rb_phone_number_type(VALUE self) {
 
   PhoneNumberInfo *phone_number_info;
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
-  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   VALUE result;
 
   // @see
   // https://github.com/google/libphonenumber/blob/4e9954edea7cf263532c5dd3861a801104c3f012/cpp/src/phonenumbers/phonenumberutil.h#L91
-  switch (phone_util->GetNumberType(phone_number_info->phone_number)) {
+  switch (phone_util.GetNumberType(phone_number_info->phone_number)) {
   case PhoneNumberUtil::PREMIUM_RATE:
     result = rb_intern("premium_rate");
     break;
@@ -360,6 +387,35 @@ extern "C" VALUE rb_phone_number_type(VALUE self) {
   return rb_iv_set(self, "@type", ID2SYM(result));
 }
 
+extern "C" VALUE rb_phone_number_area_code(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@area_code"))) {
+    return rb_iv_get(self, "@area_code");
+  }
+
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
+  PhoneNumberInfo *phone_number_info;
+  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+
+  PhoneNumber number = phone_number_info->phone_number;
+  string national_significant_number;
+  phone_util.GetNationalSignificantNumber(number, &national_significant_number);
+  string area_code;
+  string subscriber_number;
+
+  int area_code_length = phone_util.GetLengthOfGeographicalAreaCode(number);
+  if (area_code_length > 0) {
+    area_code = national_significant_number.substr(0, area_code_length);
+    subscriber_number = national_significant_number.substr(area_code_length, string::npos);
+  } else {
+    area_code = "";
+    subscriber_number = national_significant_number;
+  }
+
+  VALUE result = rb_str_new(area_code.c_str(), area_code.size());
+
+  return rb_iv_set(self, "@area_code", result);
+}
+
 extern "C" void Init_mini_phone(void) {
   rb_mMiniPhone = rb_define_module("MiniPhone");
 
@@ -380,6 +436,8 @@ extern "C" void Init_mini_phone(void) {
   rb_define_module_function(rb_mMiniPhone, "default_country", reinterpret_cast<VALUE (*)(...)>(rb_get_default_country),
                             0);
   rb_define_module_function(rb_mMiniPhone, "parse", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_parse), -1);
+  rb_define_module_function(rb_mMiniPhone, "normalize_digits_only",
+                            reinterpret_cast<VALUE (*)(...)>(rb_normalize_digits_only), 1);
 
   rb_cPhoneNumber = rb_define_class_under(rb_mMiniPhone, "PhoneNumber", rb_cObject);
 
@@ -401,7 +459,9 @@ extern "C" void Init_mini_phone(void) {
                    0);
   rb_define_method(rb_cPhoneNumber, "rfc3966", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_rfc3966), 0);
   rb_define_method(rb_cPhoneNumber, "region_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_region_code), 0);
+  rb_define_method(rb_cPhoneNumber, "country", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_region_code), 0);
   rb_define_method(rb_cPhoneNumber, "country_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_country_code), 0);
   rb_define_method(rb_cPhoneNumber, "type", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_type), 0);
+  rb_define_method(rb_cPhoneNumber, "area_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_area_code), 0);
   rb_define_method(rb_cPhoneNumber, "eql?", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_eql_eh), 1);
 }

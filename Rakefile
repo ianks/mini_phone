@@ -32,6 +32,11 @@ task :lint do
   sh 'bundle exec rubocop'
 end
 
+task :format do
+  sh 'bundle exec rubocop -A'
+  sh 'clang-format -i ext/**/*.{h,cc}'
+end
+
 task deploy: :default do
   sh 'code -w ./lib/mini_phone/version.rb'
   version = `ruby -r ./lib/mini_phone/version.rb -e 'print MiniPhone::VERSION'`.strip
