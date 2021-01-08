@@ -70,7 +70,7 @@ unless have_library('phonenumber')
   MSG
 end
 
-$CXXFLAGS += ' -std=c++11 '
+$CXXFLAGS += ' -std=c++11 -ofast '
 
 create_makefile('mini_phone/mini_phone')
 
