@@ -1,11 +1,17 @@
 #include "mini_phone.h"
+#include "phonenumbers/phonemetadata.pb.h"
+#include "phonenumbers/phonenumber.pb.h"
 #include "phonenumbers/phonenumberutil.h"
 
 using namespace ::i18n::phonenumbers;
 
+using google::protobuf::RepeatedPtrField;
+
 static VALUE rb_mMiniPhone;
 
 static VALUE rb_cPhoneNumber;
+
+static RepeatedPtrField<NumberFormat> raw_national_format;
 
 extern "C" struct PhoneNumberInfo {
   PhoneNumber phone_number;
@@ -89,6 +95,7 @@ extern "C" VALUE rb_phone_number_alloc(VALUE self) {
 
 static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
   rb_iv_set(self, "@national", Qnil);
+  rb_iv_set(self, "@raw_national", Qnil);
   rb_iv_set(self, "@international", Qnil);
   rb_iv_set(self, "@e164", Qnil);
   rb_iv_set(self, "@country_code", Qnil);
@@ -183,6 +190,24 @@ extern "C" VALUE rb_phone_number_rfc3966(VALUE self) {
   }
 
   return rb_iv_set(self, "@rfc3966", rb_phone_number_format(self, PhoneNumberUtil::PhoneNumberFormat::RFC3966));
+}
+
+extern "C" VALUE rb_phone_number_raw_national(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@raw_national"))) {
+    return rb_iv_get(self, "@raw_national");
+  }
+
+  std::string formatted_number;
+  PhoneNumberInfo *phone_number_info;
+  PhoneNumberUtil *phone_util = PhoneNumberUtil::GetInstance();
+  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+
+  phone_util->FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, raw_national_format,
+                              &formatted_number);
+
+  VALUE result = rb_str_new(formatted_number.c_str(), formatted_number.size());
+
+  return rb_iv_set(self, "@raw_national", result);
 }
 
 extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
@@ -350,10 +375,10 @@ extern "C" void Init_mini_phone(void) {
   rb_define_module_function(rb_mMiniPhone, "possible?", reinterpret_cast<VALUE (*)(...)>(rb_is_phone_number_valid), 1);
   rb_define_module_function(rb_mMiniPhone, "impossible?", reinterpret_cast<VALUE (*)(...)>(rb_is_phone_number_invalid),
                             1);
-  rb_define_module_function(rb_mMiniPhone,
-                            "default_country=", reinterpret_cast<VALUE (*)(...)>(rb_set_default_country), 1);
-  rb_define_module_function(rb_mMiniPhone, "default_country",
-                            reinterpret_cast<VALUE (*)(...)>(rb_get_default_country), 0);
+  rb_define_module_function(rb_mMiniPhone, "default_country=", reinterpret_cast<VALUE (*)(...)>(rb_set_default_country),
+                            1);
+  rb_define_module_function(rb_mMiniPhone, "default_country", reinterpret_cast<VALUE (*)(...)>(rb_get_default_country),
+                            0);
   rb_define_module_function(rb_mMiniPhone, "parse", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_parse), -1);
 
   rb_cPhoneNumber = rb_define_class_under(rb_mMiniPhone, "PhoneNumber", rb_cObject);
@@ -367,6 +392,11 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "impossible?", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_impossible_eh), 0);
   rb_define_method(rb_cPhoneNumber, "e164", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_e164), 0);
   rb_define_method(rb_cPhoneNumber, "national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_national), 0);
+
+  // Raw National
+  raw_national_format.Add()->set_format("$1$2$3");
+
+  rb_define_method(rb_cPhoneNumber, "raw_national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_raw_national), 0);
   rb_define_method(rb_cPhoneNumber, "international", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_international),
                    0);
   rb_define_method(rb_cPhoneNumber, "rfc3966", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_rfc3966), 0);

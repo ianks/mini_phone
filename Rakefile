@@ -9,7 +9,7 @@ RSpec::Core::RakeTask.new(:spec)
 
 task build: :compile
 
-task default: %i[clobber compile spec]
+task default: %i[clobber compile spec lint]
 
 spec = Gem::Specification.load(File.expand_path('mini_phone.gemspec', __dir__))
 
@@ -28,7 +28,11 @@ task bench: %i[clobber compile] do
   end
 end
 
-task :deploy do
+task :lint do
+  sh 'bundle exec rubocop'
+end
+
+task deploy: :default do
   sh 'code -w ./lib/mini_phone/version.rb'
   version = `ruby -r ./lib/mini_phone/version.rb -e 'print MiniPhone::VERSION'`.strip
   sh "git commit -am 'Bump to v#{version} :confetti_ball:'"
