@@ -63,11 +63,7 @@ namespace :publish do
   task non_native: [:gem] do
     g = "./pkg/mini_phone-#{MiniPhone::VERSION}.gem"
 
-    results = []
-
-    results << push_to_rubygems(g)
-    results << push_to_github_registry(g)
-
-    abort if results.all? { |r| r == true }
+    push_to_rubygems(g)
+    push_to_github_registry(g)
   end
 end
