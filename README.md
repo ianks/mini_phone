@@ -1,9 +1,9 @@
 # MiniPhone
 
-A Ruby gem which plugs directly in the the Google's native C++
-[libphonenumber](https://github.com/google/libphonenumber) for extemely
+A Ruby gem which plugs directly into Google's native C++
+[libphonenumber](https://github.com/google/libphonenumber) for extremely
 _fast_ and _robust_ phone number parsing, validation, and formatting. On
-average, most methods are 40x t0 50x faster than other Ruby phone number
+average, most methods are 40x to 50x faster than other Ruby phone number
 libraries.
 
 ## Usage
@@ -41,7 +41,7 @@ phone_number.possible? # false
 
 ```ruby
 MiniPhone.parse('+12423570000').type # :mobile
-MiniPhone.parse['+12423651234').type # :fixed_line
+MiniPhone.parse('+12423651234').type # :fixed_line
 ```
 
 The possible types are directly mapped from [this
@@ -65,14 +65,14 @@ enum](https://github.com/google/libphonenumber/blob/4e9954edea7cf263532c5dd3861a
 ## Compatibility with PhoneLib
 
 MiniPhone aims to be compatible with
-[Phonelib](https://github.com/daddyz/phonelib) so in many cases it can be a
-drop in replacement. It has a smaller feature set, so if you need it it not a
-drop in replacement for every use case. If there is a feature you need, open
+[Phonelib](https://github.com/daddyz/phonelib). In many cases it can be a
+drop in replacement. It has a smaller feature set, so it is not a
+replacement for every use case. If there is a feature you need, open
 an issue and we will try to support it.
 
 ## Benchmarks
 
-On average, most methods are 40x t0 50x faster than other libraries. To run
+On average, most methods are 40x to 50x faster than other libraries. To run
 the benchmarks locally, execute: `bundle exec rake bench`
 
 ```
@@ -132,10 +132,10 @@ push git commits and tags, and push the `.gem` file to
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at
-https://github.com/[USERNAME]/mini_phone. This project is intended to be a
+https://github.com/ianks/mini_phone. This project is intended to be a
 safe, welcoming space for collaboration, and contributors are expected to
 adhere to the [code of
-conduct](https://github.com/[USERNAME]/mini_phone/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/ianks/mini_phone/blob/master/CODE_OF_CONDUCT.md).
 
 ## License
 
@@ -146,4 +146,4 @@ License](https://opensource.org/licenses/MIT).
 
 Everyone interacting in the MiniPhone project's codebases, issue trackers,
 chat rooms and mailing lists is expected to follow the [code of
-conduct](https://github.com/[USERNAME]/mini_phone/blob/master/CODE_OF_CONDUCT.md).
+conduct](https://github.com/ianks/mini_phone/blob/master/CODE_OF_CONDUCT.md).
