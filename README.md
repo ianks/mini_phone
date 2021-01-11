@@ -23,10 +23,12 @@ MiniPhone.default_country = 'US'
 
 phone_number = MiniPhone.parse('404-384-1399')
 
-phone_number.e164          # +14043841399
-phone_number.national      # (404) 384-1399
-phone_number.international # +1 404-384-1399
-phone_number.rfc3966       # tel:+1-404-384-1384
+phone_number.e164                 # +14043841399
+phone_number.national             # (404) 384-1399
+phone_number.raw_national         # 4043841399
+phone_number.dasherized_national  # 404-384-1399
+phone_number.international        # +1 404-384-1399
+phone_number.rfc3966              # tel:+1-404-384-1384
 ```
 
 ### Checking if a phone number is possible

@@ -12,6 +12,7 @@ static VALUE rb_mMiniPhone;
 static VALUE rb_cPhoneNumber;
 
 static RepeatedPtrField<NumberFormat> raw_national_format;
+static RepeatedPtrField<NumberFormat> dasherized_national_format;
 
 extern "C" struct PhoneNumberInfo {
   PhoneNumber phone_number;
@@ -122,6 +123,7 @@ extern "C" VALUE rb_phone_number_alloc(VALUE self) {
 static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
   rb_iv_set(self, "@national", Qnil);
   rb_iv_set(self, "@raw_national", Qnil);
+  rb_iv_set(self, "@dasherized_national", Qnil);
   rb_iv_set(self, "@international", Qnil);
   rb_iv_set(self, "@e164", Qnil);
   rb_iv_set(self, "@country_code", Qnil);
@@ -219,22 +221,35 @@ extern "C" VALUE rb_phone_number_rfc3966(VALUE self) {
   return rb_iv_set(self, "@rfc3966", rb_phone_number_format(self, PhoneNumberUtil::PhoneNumberFormat::RFC3966));
 }
 
-extern "C" VALUE rb_phone_number_raw_national(VALUE self) {
-  if (rb_ivar_defined(self, rb_intern("@raw_national"))) {
-    return rb_iv_get(self, "@raw_national");
-  }
-
+VALUE format_by_pattern_national(VALUE self, RepeatedPtrField<NumberFormat> format) {
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
 
-  phone_util.FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, raw_national_format,
-                             &formatted_number);
+  phone_util.FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, format, &formatted_number);
 
-  VALUE result = rb_str_new(formatted_number.c_str(), formatted_number.size());
+  return rb_str_new(formatted_number.c_str(), formatted_number.size());
+}
+
+extern "C" VALUE rb_phone_number_raw_national(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@raw_national"))) {
+    return rb_iv_get(self, "@raw_national");
+  }
+
+  VALUE result = format_by_pattern_national(self, raw_national_format);
 
   return rb_iv_set(self, "@raw_national", result);
+}
+
+extern "C" VALUE rb_phone_number_dasherized_national(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@dasherized_national"))) {
+    return rb_iv_get(self, "@dasherized_national");
+  }
+
+  VALUE result = format_by_pattern_national(self, dasherized_national_format);
+
+  return rb_iv_set(self, "@dasherized_national", result);
 }
 
 extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
@@ -416,7 +431,21 @@ extern "C" VALUE rb_phone_number_area_code(VALUE self) {
   return rb_iv_set(self, "@area_code", result);
 }
 
+static inline void setup_formats() {
+  // Raw
+  NumberFormat *raw_fmt = raw_national_format.Add();
+  raw_fmt->set_pattern("(\\d{3})(\\d{3})(\\d{4})");
+  raw_fmt->set_format("$1$2$3");
+
+  // Dasherized
+  NumberFormat *dsh_fmt = dasherized_national_format.Add();
+  dsh_fmt->set_pattern("(\\d{3})(\\d{3})(\\d{4})");
+  dsh_fmt->set_format("$1-$2-$3");
+}
+
 extern "C" void Init_mini_phone(void) {
+  setup_formats();
+
   rb_mMiniPhone = rb_define_module("MiniPhone");
 
   // Unknown
@@ -451,10 +480,9 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "e164", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_e164), 0);
   rb_define_method(rb_cPhoneNumber, "national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_national), 0);
 
-  // Raw National
-  raw_national_format.Add()->set_format("$1$2$3");
-
   rb_define_method(rb_cPhoneNumber, "raw_national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_raw_national), 0);
+  rb_define_method(rb_cPhoneNumber, "dasherized_national",
+                   reinterpret_cast<VALUE (*)(...)>(rb_phone_number_dasherized_national), 0);
   rb_define_method(rb_cPhoneNumber, "international", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_international),
                    0);
   rb_define_method(rb_cPhoneNumber, "rfc3966", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_rfc3966), 0);
