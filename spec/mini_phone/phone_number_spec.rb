@@ -120,11 +120,27 @@ RSpec.describe MiniPhone::PhoneNumber do
     end
   end
 
+  describe '#raw_international' do
+    include_examples :memoization, :raw_international
+
+    it 'formats the number' do
+      expect(valid_phone_number.raw_international).to eq('14043841384')
+    end
+  end
+
   describe '#dasherized_national' do
     include_examples :memoization, :dasherized_national
 
     it 'formats the number' do
       expect(valid_phone_number.dasherized_national).to eq('404-384-1384')
+    end
+  end
+
+  describe '#dasherized_international' do
+    include_examples :memoization, :dasherized_international
+
+    it 'formats the number' do
+      expect(valid_phone_number.dasherized_international).to eq('1-404-384-1384')
     end
   end
 

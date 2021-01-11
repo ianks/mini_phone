@@ -125,6 +125,8 @@ static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
   rb_iv_set(self, "@raw_national", Qnil);
   rb_iv_set(self, "@dasherized_national", Qnil);
   rb_iv_set(self, "@international", Qnil);
+  rb_iv_set(self, "@raw_international", Qnil);
+  rb_iv_set(self, "@dasherized_international", Qnil);
   rb_iv_set(self, "@e164", Qnil);
   rb_iv_set(self, "@country_code", Qnil);
   rb_iv_set(self, "@region_code", Qnil);
@@ -252,6 +254,47 @@ extern "C" VALUE rb_phone_number_dasherized_national(VALUE self) {
   return rb_iv_set(self, "@dasherized_national", result);
 }
 
+extern "C" VALUE rb_phone_number_country_code(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@country_code"))) {
+    return rb_iv_get(self, "@country_code");
+  }
+
+  PhoneNumberInfo *phone_number_info;
+  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+
+  int code = phone_number_info->phone_number.country_code();
+
+  VALUE result = INT2NUM(code);
+
+  return rb_iv_set(self, "@country_code", result);
+}
+
+extern "C" VALUE rb_phone_number_dasherized_international(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@dasherized_international"))) {
+    return rb_iv_get(self, "@dasherized_international");
+  }
+
+  VALUE national = rb_phone_number_dasherized_national(self);
+  VALUE cc = rb_fix2str(rb_phone_number_country_code(self), 10);
+  VALUE dash = rb_str_new("-", 1);
+  VALUE prefix = rb_str_concat(cc, dash);
+  VALUE result = rb_str_concat(prefix, national);
+
+  return rb_iv_set(self, "@dasherized_international", result);
+}
+
+extern "C" VALUE rb_phone_number_raw_international(VALUE self) {
+  if (rb_ivar_defined(self, rb_intern("@raw_international"))) {
+    return rb_iv_get(self, "@raw_international");
+  }
+
+  VALUE national = rb_phone_number_raw_national(self);
+  VALUE cc = rb_fix2str(rb_phone_number_country_code(self), 10);
+  VALUE result = rb_str_concat(cc, national);
+
+  return rb_iv_set(self, "@raw_international", result);
+}
+
 extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
   if (rb_ivar_defined(self, rb_intern("@valid"))) {
     return rb_iv_get(self, "@valid");
@@ -311,21 +354,6 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
   VALUE result = rb_str_new(code.c_str(), code.size());
 
   return rb_iv_set(self, "@region_code", result);
-}
-
-extern "C" VALUE rb_phone_number_country_code(VALUE self) {
-  if (rb_ivar_defined(self, rb_intern("@country_code"))) {
-    return rb_iv_get(self, "@country_code");
-  }
-
-  PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
-
-  int code = phone_number_info->phone_number.country_code();
-
-  VALUE result = INT2NUM(code);
-
-  return rb_iv_set(self, "@country_code", result);
 }
 
 extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
@@ -481,6 +509,10 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_national), 0);
 
   rb_define_method(rb_cPhoneNumber, "raw_national", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_raw_national), 0);
+  rb_define_method(rb_cPhoneNumber, "raw_international",
+                   reinterpret_cast<VALUE (*)(...)>(rb_phone_number_raw_international), 0);
+  rb_define_method(rb_cPhoneNumber, "dasherized_international",
+                   reinterpret_cast<VALUE (*)(...)>(rb_phone_number_dasherized_international), 0);
   rb_define_method(rb_cPhoneNumber, "dasherized_national",
                    reinterpret_cast<VALUE (*)(...)>(rb_phone_number_dasherized_national), 0);
   rb_define_method(rb_cPhoneNumber, "international", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_international),
