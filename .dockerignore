@@ -1,0 +1,4 @@
+.git/
+tmp/
+vendor/
+valgrind-out.txt

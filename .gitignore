@@ -17,3 +17,4 @@ mkmf.log
 Gemfile.lock
 vendor/cache/
 *.gem
+valgrind-out.txt

@@ -76,3 +76,11 @@ namespace :publish do
     push_to_github_registry(g)
   end
 end
+
+desc 'Run valgrind test'
+task :valgrind do
+  sh 'docker build --tag mini_phone_dev -f Dockerfile.dev .'
+  cmd = "docker run -it --rm -v #{Dir.pwd}:/app -w /app mini_phone_dev sh bin/valgrind-test.sh bench/memory.rb --once"
+  puts cmd
+  system cmd
+end
