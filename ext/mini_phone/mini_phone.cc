@@ -14,10 +14,26 @@ static VALUE rb_cPhoneNumber;
 static RepeatedPtrField<NumberFormat> raw_national_format;
 static RepeatedPtrField<NumberFormat> dasherized_national_format;
 
-extern "C" struct PhoneNumberInfo {
-  PhoneNumber phone_number;
-  std::string raw_phone_number;
-  std::string raw_country_code;
+extern "C" struct PhoneNumberInfo { PhoneNumber phone_number; };
+
+extern "C" size_t phone_number_info_size(const void *data) { return sizeof(PhoneNumberInfo); }
+
+extern "C" void phone_number_info_free(void *data) {
+  PhoneNumberInfo *phone_number_info = static_cast<PhoneNumberInfo *>(data);
+
+  delete phone_number_info;
+}
+
+static const rb_data_type_t phone_number_info_type = {
+    .wrap_struct_name = "MiniPhone/PhoneNumberInfo",
+    .function =
+        {
+            .dmark = NULL,
+            .dfree = phone_number_info_free,
+            .dsize = phone_number_info_size,
+        },
+    .data = NULL,
+    .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
 
 static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
@@ -107,8 +123,6 @@ extern "C" VALUE rb_set_default_country(VALUE self, VALUE str_code) {
 
 extern "C" VALUE rb_get_default_country(VALUE self) { return rb_iv_get(self, "@default_country"); }
 
-extern "C" void rb_phone_number_dealloc(PhoneNumberInfo *phone_number_info) { delete phone_number_info; }
-
 extern "C" VALUE rb_phone_number_parse(int argc, VALUE *argv, VALUE self) {
   return rb_class_new_instance(argc, argv, rb_cPhoneNumber);
 }
@@ -116,8 +130,7 @@ extern "C" VALUE rb_phone_number_parse(int argc, VALUE *argv, VALUE self) {
 extern "C" VALUE rb_phone_number_alloc(VALUE self) {
   PhoneNumberInfo *phone_number_info = new PhoneNumberInfo();
 
-  /* wrap */
-  return Data_Wrap_Struct(self, NULL, &rb_phone_number_dealloc, phone_number_info);
+  return TypedData_Wrap_Struct(self, &phone_number_info_type, phone_number_info);
 }
 
 static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
@@ -160,7 +173,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
   PhoneNumberInfo *phone_number_info;
   PhoneNumber parsed_number;
 
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
@@ -172,7 +185,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
   if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
     rb_phone_number_nullify_ivars(self);
   } else {
-    phone_number_info->phone_number = parsed_number;
+    phone_number_info->phone_number.Swap(&parsed_number);
   }
 
   return self;
@@ -181,7 +194,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
 static inline VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt) {
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   PhoneNumber parsed_number = phone_number_info->phone_number;
@@ -227,7 +240,7 @@ VALUE format_by_pattern_national(VALUE self, RepeatedPtrField<NumberFormat> form
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   phone_util.FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, format, &formatted_number);
 
@@ -260,7 +273,7 @@ extern "C" VALUE rb_phone_number_country_code(VALUE self) {
   }
 
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   int code = phone_number_info->phone_number.country_code();
 
@@ -302,7 +315,7 @@ extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
 
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
@@ -324,7 +337,7 @@ extern "C" VALUE rb_phone_number_possible_eh(VALUE self) {
 
   std::string formatted_number;
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
@@ -346,7 +359,7 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
 
   PhoneNumberInfo *phone_number_info;
   std::string code;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number.country_code(), &code);
@@ -364,10 +377,10 @@ extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   PhoneNumberInfo *self_phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, self_phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, self_phone_number_info);
 
   PhoneNumberInfo *other_phone_number_info;
-  Data_Get_Struct(other, PhoneNumberInfo, other_phone_number_info);
+  TypedData_Get_Struct(other, PhoneNumberInfo, &phone_number_info_type, other_phone_number_info);
   if (phone_util.IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
     return Qtrue;
   } else {
@@ -381,7 +394,7 @@ extern "C" VALUE rb_phone_number_type(VALUE self) {
   }
 
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
   VALUE result;
@@ -437,7 +450,7 @@ extern "C" VALUE rb_phone_number_area_code(VALUE self) {
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   PhoneNumberInfo *phone_number_info;
-  Data_Get_Struct(self, PhoneNumberInfo, phone_number_info);
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   PhoneNumber number = phone_number_info->phone_number;
   string national_significant_number;
