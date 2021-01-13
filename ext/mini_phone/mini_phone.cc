@@ -20,8 +20,10 @@ extern "C" size_t phone_number_info_size(const void *data) { return sizeof(Phone
 
 extern "C" void phone_number_info_free(void *data) {
   PhoneNumberInfo *phone_number_info = static_cast<PhoneNumberInfo *>(data);
+  phone_number_info->phone_number.~PhoneNumber();
+  phone_number_info->~PhoneNumberInfo();
 
-  delete phone_number_info;
+  xfree(data);
 }
 
 static const rb_data_type_t phone_number_info_type = {
@@ -128,7 +130,9 @@ extern "C" VALUE rb_phone_number_parse(int argc, VALUE *argv, VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_alloc(VALUE self) {
-  PhoneNumberInfo *phone_number_info = new PhoneNumberInfo();
+  // PhoneNumberInfo *phone_number_info = new PhoneNumberInfo();
+  void *data = xmalloc(sizeof(PhoneNumberInfo));
+  PhoneNumberInfo *phone_number_info = new (data) PhoneNumberInfo();
 
   return TypedData_Wrap_Struct(self, &phone_number_info_type, phone_number_info);
 }
