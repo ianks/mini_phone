@@ -255,35 +255,11 @@ RSpec.describe MiniPhone::PhoneNumber do
     end
   end
 
-  it 'has a mem_size' do
+  it 'has an accurate mem_size' do
     require 'objspace'
 
     pn = MiniPhone::PhoneNumber.new('+1 404 384 1384')
 
     expect(ObjectSpace.memsize_of(pn)).to eql(128)
-  end
-
-  describe 'fuzz testing' do
-    it 'does not cause any segfaults' do
-      Thread.abort_on_exception = true
-
-      threads = Array.new(10).map do
-        Thread.new do |_t|
-          Array.new(1000).map do
-            pn = MiniPhone::PhoneNumber.new('+1 404 384 1384')
-            pn.e164
-            pn.country_code
-            pn.valid?
-            pn.type
-            pn
-          end
-
-          GC.start
-          GC.compact if GC.respond_to?(:compact)
-        end
-      end
-
-      threads.map(&:join)
-    end
   end
 end
