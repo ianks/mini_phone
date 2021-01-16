@@ -4,6 +4,13 @@ RSpec.describe 'Smoke testing' do
   it 'does not leak memory' do
     require 'get_process_mem'
 
+    # warmup
+    10.times do
+      10_000.times { MiniPhone::PhoneNumber.new('+1 404 384 1384') }
+      GC.start
+    end
+    10.times { GC.start }
+
     100_000.times do
       MiniPhone::PhoneNumber.new('+1 404 384 1384')
     end
@@ -16,7 +23,7 @@ RSpec.describe 'Smoke testing' do
     10.times { GC.start }
     curr_bytes = GetProcessMem.new.mb
 
-    expect(curr_bytes).to be_within(1).of(prev_bytes)
+    expect(curr_bytes).to be_within(3).of(prev_bytes)
     expect(curr_bytes).to be < 50
   end
 

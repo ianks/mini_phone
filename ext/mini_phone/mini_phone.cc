@@ -14,15 +14,15 @@ static VALUE rb_cPhoneNumber;
 static RepeatedPtrField<NumberFormat> raw_national_format;
 static RepeatedPtrField<NumberFormat> dasherized_national_format;
 
-extern "C" struct PhoneNumberInfo { PhoneNumber phone_number; };
+extern "C" struct PhoneNumberInfo { PhoneNumber *phone_number; };
 
-extern "C" size_t phone_number_info_size(const void *data) { return sizeof(PhoneNumberInfo); }
+extern "C" size_t phone_number_info_size(const void *data) { return sizeof(PhoneNumberInfo) + sizeof(PhoneNumber); }
 
 extern "C" void phone_number_info_free(void *data) {
   PhoneNumberInfo *phone_number_info = static_cast<PhoneNumberInfo *>(data);
-  phone_number_info->phone_number.~PhoneNumber();
+  phone_number_info->phone_number->~PhoneNumber();
+  xfree(phone_number_info->phone_number);
   phone_number_info->~PhoneNumberInfo();
-
   xfree(data);
 }
 
@@ -130,9 +130,11 @@ extern "C" VALUE rb_phone_number_parse(int argc, VALUE *argv, VALUE self) {
 }
 
 extern "C" VALUE rb_phone_number_alloc(VALUE self) {
-  // PhoneNumberInfo *phone_number_info = new PhoneNumberInfo();
-  void *data = xmalloc(sizeof(PhoneNumberInfo));
+  void *phone_number_data = ALLOC(PhoneNumber);
+  void *data = ALLOC(PhoneNumberInfo);
   PhoneNumberInfo *phone_number_info = new (data) PhoneNumberInfo();
+  PhoneNumber *phone_number = new (phone_number_data) PhoneNumber();
+  phone_number_info->phone_number = phone_number;
 
   return TypedData_Wrap_Struct(self, &phone_number_info_type, phone_number_info);
 }
@@ -189,7 +191,7 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
   if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
     rb_phone_number_nullify_ivars(self);
   } else {
-    phone_number_info->phone_number.Swap(&parsed_number);
+    phone_number_info->phone_number->Swap(&parsed_number);
   }
 
   return self;
@@ -201,8 +203,8 @@ static inline VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNum
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
-  PhoneNumber parsed_number = phone_number_info->phone_number;
-  phone_util.Format(parsed_number, fmt, &formatted_number);
+  PhoneNumber *parsed_number = phone_number_info->phone_number;
+  phone_util.Format(*parsed_number, fmt, &formatted_number);
 
   return rb_str_new(formatted_number.c_str(), formatted_number.size());
 }
@@ -246,7 +248,7 @@ VALUE format_by_pattern_national(VALUE self, RepeatedPtrField<NumberFormat> form
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
-  phone_util.FormatByPattern(phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, format, &formatted_number);
+  phone_util.FormatByPattern(*phone_number_info->phone_number, PhoneNumberUtil::NATIONAL, format, &formatted_number);
 
   return rb_str_new(formatted_number.c_str(), formatted_number.size());
 }
@@ -279,7 +281,7 @@ extern "C" VALUE rb_phone_number_country_code(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
-  int code = phone_number_info->phone_number.country_code();
+  int code = phone_number_info->phone_number->country_code();
 
   VALUE result = INT2NUM(code);
 
@@ -323,7 +325,7 @@ extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  if (phone_util.IsValidNumber(phone_number_info->phone_number)) {
+  if (phone_util.IsValidNumber(*phone_number_info->phone_number)) {
     return rb_iv_set(self, "@valid", Qtrue);
   } else {
     return rb_iv_set(self, "@valid", Qfalse);
@@ -345,7 +347,7 @@ extern "C" VALUE rb_phone_number_possible_eh(VALUE self) {
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  if (phone_util.IsPossibleNumber(phone_number_info->phone_number)) {
+  if (phone_util.IsPossibleNumber(*phone_number_info->phone_number)) {
     return rb_iv_set(self, "@possible", Qtrue);
   } else {
     return rb_iv_set(self, "@possible", Qfalse);
@@ -366,7 +368,7 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number.country_code(), &code);
+  phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number->country_code(), &code);
 
   VALUE result = rb_str_new(code.c_str(), code.size());
 
@@ -385,7 +387,8 @@ extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
 
   PhoneNumberInfo *other_phone_number_info;
   TypedData_Get_Struct(other, PhoneNumberInfo, &phone_number_info_type, other_phone_number_info);
-  if (phone_util.IsNumberMatch(other_phone_number_info->phone_number, self_phone_number_info->phone_number)) {
+
+  if (phone_util.IsNumberMatch(*other_phone_number_info->phone_number, *self_phone_number_info->phone_number)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -405,7 +408,7 @@ extern "C" VALUE rb_phone_number_type(VALUE self) {
 
   // @see
   // https://github.com/google/libphonenumber/blob/4e9954edea7cf263532c5dd3861a801104c3f012/cpp/src/phonenumbers/phonenumberutil.h#L91
-  switch (phone_util.GetNumberType(phone_number_info->phone_number)) {
+  switch (phone_util.GetNumberType(*phone_number_info->phone_number)) {
   case PhoneNumberUtil::PREMIUM_RATE:
     result = rb_intern("premium_rate");
     break;
@@ -456,13 +459,13 @@ extern "C" VALUE rb_phone_number_area_code(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
-  PhoneNumber number = phone_number_info->phone_number;
+  PhoneNumber *number = phone_number_info->phone_number;
   string national_significant_number;
-  phone_util.GetNationalSignificantNumber(number, &national_significant_number);
+  phone_util.GetNationalSignificantNumber(*number, &national_significant_number);
   string area_code;
   string subscriber_number;
 
-  int area_code_length = phone_util.GetLengthOfGeographicalAreaCode(number);
+  int area_code_length = phone_util.GetLengthOfGeographicalAreaCode(*number);
   if (area_code_length > 0) {
     area_code = national_significant_number.substr(0, area_code_length);
     subscriber_number = national_significant_number.substr(area_code_length, string::npos);

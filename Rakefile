@@ -78,9 +78,19 @@ namespace :publish do
 end
 
 desc 'Run valgrind test'
-task :valgrind do
-  sh 'docker build --tag mini_phone_dev -f Dockerfile.dev .'
-  cmd = "docker run -it --rm -v #{Dir.pwd}:/app -w /app mini_phone_dev sh bin/valgrind-test.sh bench/memory.rb --once"
-  puts cmd
-  system cmd
+
+namespace :debug do
+  desc 'Plot memory'
+  task :memory do
+    sh 'debug/memory_plot/plot.sh'
+  end
+
+  task :valgrind do
+    sh 'docker build --tag mini_phone_dev -f Dockerfile.dev .'
+    args = '--tool=memcheck --num-callers=15 --partial-loads-ok=yes --undef-value-errors=no'
+    script = 'ruby debug/memory_plot/memory.rb --once'
+    cmd = "docker run -it --rm -v #{Dir.pwd}:/app -w /app mini_phone_dev valgrind #{args} #{script}"
+    puts cmd
+    system cmd
+  end
 end
