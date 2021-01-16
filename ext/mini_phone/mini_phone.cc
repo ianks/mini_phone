@@ -26,7 +26,7 @@ extern "C" void phone_number_info_free(void *data) {
   xfree(data);
 }
 
-static const rb_data_type_t phone_number_info_type = {
+extern "C" const rb_data_type_t phone_number_info_type = {
     .wrap_struct_name = "MiniPhone/PhoneNumberInfo",
     .function =
         {
