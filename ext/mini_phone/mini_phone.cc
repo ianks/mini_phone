@@ -33,7 +33,9 @@ extern "C" const rb_data_type_t phone_number_info_type = {
             .dmark = NULL,
             .dfree = phone_number_info_free,
             .dsize = phone_number_info_size,
+            .dcompact = NULL,
         },
+    .parent = NULL,
     .data = NULL,
     .flags = RUBY_TYPED_FREE_IMMEDIATELY,
 };
