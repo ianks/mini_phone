@@ -480,6 +480,8 @@ extern "C" VALUE rb_phone_number_area_code(VALUE self) {
   return rb_iv_set(self, "@area_code", result);
 }
 
+extern "C" VALUE rb_phone_number_to_s(VALUE self) { return rb_iv_get(self, "@input"); }
+
 static inline void setup_formats() {
   // Raw
   NumberFormat *raw_fmt = raw_national_format.Add();
@@ -544,5 +546,6 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "country_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_country_code), 0);
   rb_define_method(rb_cPhoneNumber, "type", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_type), 0);
   rb_define_method(rb_cPhoneNumber, "area_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_area_code), 0);
+  rb_define_method(rb_cPhoneNumber, "to_s", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_to_s), 0);
   rb_define_method(rb_cPhoneNumber, "eql?", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_eql_eh), 1);
 }

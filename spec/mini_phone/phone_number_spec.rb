@@ -192,6 +192,12 @@ RSpec.describe MiniPhone::PhoneNumber do
     end
   end
 
+  describe '#to_s' do
+    it 'returns the input' do
+      expect(valid_phone_number.to_s).to eq('+14043841384')
+    end
+  end
+
   describe '#type' do
     [
       ['+1 (800) 221-1212', :toll_free],
