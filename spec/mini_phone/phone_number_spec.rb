@@ -238,18 +238,26 @@ RSpec.describe MiniPhone::PhoneNumber do
     it 'is equal to another number which is logically the same' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1384')
 
-      expect(valid_phone_number).to eql(other)
+      expect(valid_phone_number).to eq(other)
     end
 
     it 'is not equal to another number which is logically different' do
       other = MiniPhone::PhoneNumber.new('+1 404 384 1385')
 
-      expect(valid_phone_number).to eql(other)
+      expect(valid_phone_number).not_to eq other
+    end
+
+    it 'is eql when parsing directly' do
+      expect(MiniPhone.parse('+14043841384')).to eq(MiniPhone.parse('4043841384', 'US'))
+    end
+
+    it 'works with nil' do
+      expect(MiniPhone::PhoneNumber.new(nil)).to eq(MiniPhone::PhoneNumber.new(nil))
     end
   end
 
   context 'with a nil phone number' do
-    (MiniPhone::PhoneNumber.instance_methods(false) - %i[valid? eql? valid? invalid? possible?
+    (MiniPhone::PhoneNumber.instance_methods(false) - %i[valid? eql? == valid? invalid? possible?
                                                          impossible?]).each do |method_name|
       describe method_name do
         it 'returns nil' do

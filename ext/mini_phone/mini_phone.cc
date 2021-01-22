@@ -376,20 +376,28 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
   return rb_iv_set(self, "@region_code", result);
 }
 
-extern "C" VALUE rb_phone_number_eql_eh(VALUE self, VALUE other) {
-  if (!rb_obj_is_instance_of(other, rb_cPhoneNumber)) {
+extern "C" VALUE rb_phone_number_match_eh(VALUE self, VALUE other) {
+  if (!rb_obj_is_kind_of(other, rb_cPhoneNumber)) {
     return Qfalse;
+  }
+
+  VALUE self_input = rb_iv_get(self, "@input");
+  VALUE other_input = rb_iv_get(other, "@input");
+
+  // If inputs are the exact same, the result is as well
+  if (rb_eql(self_input, other_input)) {
+    return Qtrue;
   }
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  PhoneNumberInfo *self_phone_number_info;
-  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, self_phone_number_info);
+  PhoneNumberInfo *self_info;
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, self_info);
 
-  PhoneNumberInfo *other_phone_number_info;
-  TypedData_Get_Struct(other, PhoneNumberInfo, &phone_number_info_type, other_phone_number_info);
+  PhoneNumberInfo *other_info;
+  TypedData_Get_Struct(other, PhoneNumberInfo, &phone_number_info_type, other_info);
 
-  if (phone_util.IsNumberMatch(*other_phone_number_info->phone_number, *self_phone_number_info->phone_number)) {
+  if (phone_util.IsNumberMatch(*other_info->phone_number, *self_info->phone_number) == PhoneNumberUtil::EXACT_MATCH) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -547,5 +555,5 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "type", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_type), 0);
   rb_define_method(rb_cPhoneNumber, "area_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_area_code), 0);
   rb_define_method(rb_cPhoneNumber, "to_s", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_to_s), 0);
-  rb_define_method(rb_cPhoneNumber, "eql?", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_eql_eh), 1);
+  rb_define_method(rb_cPhoneNumber, "==", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_match_eh), 1);
 }
