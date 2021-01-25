@@ -20,7 +20,7 @@ unless have_library('phonenumber')
     |    brew install libphonenumber                                       |
     |                                                                      |
     |  On Debian / Ubuntu:                                                 |
-    |    apt-get install -y libphonenumber                                 |
+    |    apt-get install -y libphonenumber-dev                             |
     |                                                                      |
     | 2. Retry installing the gem (i.e `bundle install`)                   |
     |                                                                      |

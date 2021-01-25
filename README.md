@@ -98,7 +98,7 @@ Comparison:
    ```
 
    ```sh
-   apt-get install -y libphonenumber # debian / ubuntu
+   apt-get install -y libphonenumber-dev # debian / ubuntu
    ```
 
 2. Add this line to your application's Gemfile:
