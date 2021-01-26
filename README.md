@@ -3,7 +3,7 @@
 A Ruby gem which plugs directly into Google's native C++
 [libphonenumber](https://github.com/google/libphonenumber) for extremely
 _fast_ and _robust_ phone number parsing, validation, and formatting. On
-average, most methods are 40x to 50x faster than other Ruby phone number
+average, most methods are 70x to 80x faster than other Ruby phone number
 libraries.
 
 ## Usage
@@ -78,15 +78,15 @@ On average, most methods are 40x to 50x faster than other libraries. To run
 the benchmarks locally, execute: `bundle exec rake bench`
 
 ```
-Comparison:
-    Phonelib: valid?:      482.3 i/s
-   MiniPhone: valid?:    23111.4 i/s - 47.92x faster
-```
+# Results from my Linux (5.10.6-arch1-10)
 
-```
 Comparison:
-      Phonelib: e164:      652.3 i/s
-     MiniPhone: e164:    31567.0 i/s - 48.39x faster
+    Phonelib: valid?:      426.0 i/s
+   MiniPhone: valid?:    34707.9 i/s - 81.47x faster
+
+Comparison:
+      Phonelib: e164:      580.3 i/s
+     MiniPhone: e164:    43385.9 i/s - 74.76x faster
 ```
 
 ## Installation
