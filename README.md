@@ -79,14 +79,14 @@ the benchmarks locally, execute: `bundle exec rake bench`
 
 ```
 Comparison:
-   MiniPhone: valid?:    23111.4 i/s
-    Phonelib: valid?:      482.3 i/s - 47.92x  (± 0.00) slower
+    Phonelib: valid?:      482.3 i/s
+   MiniPhone: valid?:    23111.4 i/s - 47.92x faster
 ```
 
 ```
 Comparison:
-     MiniPhone: e164:    31567.0 i/s
-      Phonelib: e164:      652.3 i/s - 48.39x  (± 0.00) slower
+      Phonelib: e164:      652.3 i/s
+     MiniPhone: e164:    31567.0 i/s - 48.39x faster
 ```
 
 ## Installation
