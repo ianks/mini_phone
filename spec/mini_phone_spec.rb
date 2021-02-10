@@ -41,15 +41,39 @@ RSpec.describe MiniPhone do
     it 'returns false for invalid phone numbers' do
       expect(MiniPhone.valid_for_country?('-12', 'US')).to eq(false)
     end
+
+    it 'returns false for numbers not in a region' do
+      result = MiniPhone.valid_for_country?('+44 1434 634996', 'US')
+
+      expect(result).to eql(false)
+    end
+
+    it 'returns true for numbers in a valid region' do
+      result = MiniPhone.valid_for_country?('+44 1434 634996', 'GB')
+
+      expect(result).to eql(true)
+    end
   end
 
-  describe '.invalid?' do
+  describe '.invalid_for_country?' do
     it 'returns false for valid phone numbers' do
       expect(MiniPhone.invalid_for_country?('4043841384', 'US')).to eq(false)
     end
 
     it 'returns true for invalid phone numbers' do
       expect(MiniPhone.invalid_for_country?('-12', 'US')).to eq(true)
+    end
+
+    it 'returns true for numbers not in a region' do
+      result = MiniPhone.invalid_for_country?('+44 1434 634996', 'US')
+
+      expect(result).to eql(true)
+    end
+
+    it 'returns false for numbers in a valid region' do
+      result = MiniPhone.invalid_for_country?('+44 1434 634996', 'GB')
+
+      expect(result).to eql(false)
     end
   end
 

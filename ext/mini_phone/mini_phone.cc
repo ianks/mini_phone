@@ -52,7 +52,13 @@ static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
 
   auto result = phone_util.ParseAndKeepRawInput(phone_number, country_code, &parsed_number);
 
-  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util.IsValidNumber(parsed_number)) {
+  if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
+    return Qfalse;
+  }
+
+  if (country_code == "ZZ" && phone_util.IsValidNumber(parsed_number)) {
+    return Qtrue;
+  } else if (phone_util.IsValidNumberForRegion(parsed_number, country_code)) {
     return Qtrue;
   } else {
     return Qfalse;
