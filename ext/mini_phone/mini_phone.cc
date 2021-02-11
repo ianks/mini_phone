@@ -52,7 +52,13 @@ static inline VALUE is_phone_number_valid(VALUE self, VALUE str, VALUE cc) {
 
   auto result = phone_util.ParseAndKeepRawInput(phone_number, country_code, &parsed_number);
 
-  if (result == PhoneNumberUtil::NO_PARSING_ERROR && phone_util.IsValidNumber(parsed_number)) {
+  if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
+    return Qfalse;
+  }
+
+  if (country_code == "ZZ" && phone_util.IsValidNumber(parsed_number)) {
+    return Qtrue;
+  } else if (phone_util.IsValidNumberForRegion(parsed_number, country_code)) {
     return Qtrue;
   } else {
     return Qfalse;
@@ -157,45 +163,6 @@ static inline VALUE rb_phone_number_nullify_ivars(VALUE self) {
   rb_iv_set(self, "@area_code", Qnil);
 
   return Qtrue;
-}
-
-extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
-  VALUE str;
-  VALUE def_cc;
-
-  rb_scan_args(argc, argv, "11", &str, &def_cc);
-
-  if (NIL_P(def_cc)) {
-    def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
-  }
-
-  rb_iv_set(self, "@input", str);
-
-  if (FIXNUM_P(str)) {
-    str = rb_fix2str(str, 10);
-  } else if (!RB_TYPE_P(str, T_STRING)) {
-    return rb_phone_number_nullify_ivars(self);
-  }
-
-  PhoneNumberInfo *phone_number_info;
-  PhoneNumber parsed_number;
-
-  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
-
-  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
-
-  std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
-  std::string country_code(RSTRING_PTR(def_cc), RSTRING_LEN(def_cc));
-
-  auto result = phone_util.Parse(phone_number, country_code, &parsed_number);
-
-  if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
-    rb_phone_number_nullify_ivars(self);
-  } else {
-    phone_number_info->phone_number->Swap(&parsed_number);
-  }
-
-  return self;
 }
 
 static inline VALUE rb_phone_number_format(VALUE self, PhoneNumberUtil::PhoneNumberFormat fmt) {
@@ -500,6 +467,49 @@ static inline void setup_formats() {
   NumberFormat *dsh_fmt = dasherized_national_format.Add();
   dsh_fmt->set_pattern("(\\d{3})(\\d{3})(\\d{4})");
   dsh_fmt->set_format("$1-$2-$3");
+}
+
+extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
+  VALUE str;
+  VALUE def_cc;
+
+  rb_scan_args(argc, argv, "11", &str, &def_cc);
+
+  if (NIL_P(def_cc)) {
+    def_cc = rb_iv_get(rb_mMiniPhone, "@default_country");
+  }
+
+  rb_iv_set(self, "@input", str);
+
+  if (FIXNUM_P(str)) {
+    str = rb_fix2str(str, 10);
+  } else if (!RB_TYPE_P(str, T_STRING)) {
+    return rb_phone_number_nullify_ivars(self);
+  }
+
+  PhoneNumberInfo *phone_number_info;
+  PhoneNumber parsed_number;
+
+  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
+
+  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
+
+  std::string phone_number(RSTRING_PTR(str), RSTRING_LEN(str));
+  std::string country_code(RSTRING_PTR(def_cc), RSTRING_LEN(def_cc));
+
+  auto result = phone_util.Parse(phone_number, country_code, &parsed_number);
+
+  if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
+    rb_phone_number_nullify_ivars(self);
+  } else {
+    phone_number_info->phone_number->Swap(&parsed_number);
+  }
+
+  if (country_code != "ZZ" && !rb_str_equal(rb_phone_number_region_code(self), def_cc)) {
+    rb_phone_number_nullify_ivars(self);
+  }
+
+  return self;
 }
 
 extern "C" void Init_mini_phone(void) {

@@ -56,6 +56,12 @@ RSpec.describe MiniPhone::PhoneNumber do
 
       expect(pn.valid?).to eq(false)
     end
+
+    it 'returns false for invalid phone numbers for a region' do
+      pn = MiniPhone::PhoneNumber.new('+447975777666', 'US')
+
+      expect(pn.valid?).to eq(false)
+    end
   end
 
   describe '#invalid?' do
