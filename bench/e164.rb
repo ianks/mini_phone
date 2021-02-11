@@ -17,7 +17,7 @@ Benchmark.ips do |x|
   end
 
   x.report('TelephoneNumber: e164') do
-    pn = TelephoneNumber.parse("+1 404-384-1384")
+    pn = TelephoneNumber.parse('+1 404-384-1384')
     pn.e164_number
   end
 
