@@ -27,6 +27,12 @@ RSpec.describe MiniPhone::PhoneNumber do
 
       expect(pn.e164).to eql('+14043841384')
     end
+
+    it 'assumes unknown region code when initialized with nil' do
+      pn = MiniPhone::PhoneNumber.parse('t', 'US')
+
+      expect(pn.region_code).to eql(nil)
+    end
   end
 
   describe '#parse' do
@@ -278,8 +284,8 @@ RSpec.describe MiniPhone::PhoneNumber do
   it 'has an accurate mem_size' do
     require 'objspace'
 
-    pn = MiniPhone::PhoneNumber.new('+1 404 384 1384')
+    pn = MiniPhone::PhoneNumber.new('+1 404 384 11111111111111')
 
-    expect(ObjectSpace.memsize_of(pn)).to eql(136)
+    expect(ObjectSpace.memsize_of(pn)).to eql(192)
   end
 end
