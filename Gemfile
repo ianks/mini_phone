@@ -17,4 +17,5 @@ gem 'rubocop', require: false
 group :bench do
   gem 'benchmark-ips'
   gem 'phonelib'
+  gem 'telephone_number'
 end

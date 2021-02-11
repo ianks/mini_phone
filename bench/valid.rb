@@ -16,5 +16,10 @@ Benchmark.ips do |x|
     Phonelib.valid?('444')
   end
 
+  x.report('TelephoneNumber: valid?') do
+    TelephoneNumber.valid?('+14043841384')
+    TelephoneNumber.valid?('444')
+  end
+
   x.compare!
 end

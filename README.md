@@ -77,16 +77,18 @@ an issue and we will try to support it.
 On average, most methods are 40x to 50x faster than other libraries. To run
 the benchmarks locally, execute: `bundle exec rake bench`
 
+### Results from my Linux (5.10.6-arch1-10)
+
 ```
-# Results from my Linux (5.10.6-arch1-10)
+Comparison:
+   MiniPhone:    valid?:    33382.0 i/s
+    Phonelib:    valid?:      422.8 i/s - 78.95x  (± 0.00) slower
+TelephoneNumber: valid?:      164.3 i/s - 203.13x  (± 0.00) slower
 
 Comparison:
-    Phonelib: valid?:      426.0 i/s
-   MiniPhone: valid?:    34707.9 i/s - 81.47x faster
-
-Comparison:
-      Phonelib: e164:      580.3 i/s
-     MiniPhone: e164:    43385.9 i/s - 74.76x faster
+     MiniPhone:  e164:    41187.5 i/s
+      Phonelib:  e164:      579.0 i/s - 71.14x  (± 0.00) slower
+TelephoneNumber: e164:      228.8 i/s - 179.99x  (± 0.00) slower
 ```
 
 ## Installation
