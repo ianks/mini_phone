@@ -433,13 +433,14 @@ extern "C" VALUE rb_phone_number_to_s(VALUE self) {
   PhoneNumberInfo *phone_number_info;
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
   PhoneNumber *phone_number = phone_number_info->phone_number;
+
+  if (phone_number == NULL) {
+    return Qnil;
+  }
+
   std::string raw_input = phone_number->raw_input();
 
-  if (raw_input == "") {
-    return Qnil;
-  } else {
-    return rb_str_new(raw_input.c_str(), raw_input.size());
-  }
+  return rb_str_new(raw_input.c_str(), raw_input.size());
 }
 
 static inline void setup_formats() {
@@ -517,9 +518,9 @@ extern "C" VALUE rb_phone_number_initialize(int argc, VALUE *argv, VALUE self) {
 
   if (result != PhoneNumberUtil::NO_PARSING_ERROR) {
     rb_phone_number_nullify_ivars(self);
-  } else {
-    phone_number_info->phone_number->Swap(&parsed_number);
   }
+
+  phone_number_info->phone_number->Swap(&parsed_number);
 
   return self;
 }
@@ -577,6 +578,5 @@ extern "C" void Init_mini_phone(void) {
   rb_define_method(rb_cPhoneNumber, "type", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_type), 0);
   rb_define_method(rb_cPhoneNumber, "area_code", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_area_code), 0);
   rb_define_method(rb_cPhoneNumber, "to_s", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_to_s), 0);
-  rb_define_method(rb_cPhoneNumber, "raw_input", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_to_s), 0);
   rb_define_method(rb_cPhoneNumber, "==", reinterpret_cast<VALUE (*)(...)>(rb_phone_number_match_eh), 1);
 }

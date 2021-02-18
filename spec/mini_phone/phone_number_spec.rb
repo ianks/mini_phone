@@ -270,7 +270,7 @@ RSpec.describe MiniPhone::PhoneNumber do
 
   context 'with a nil phone number' do
     (MiniPhone::PhoneNumber.instance_methods(false) - %i[valid? eql? == valid? invalid? possible?
-                                                         impossible?]).each do |method_name|
+                                                         impossible? to_s]).each do |method_name|
       describe method_name do
         it 'returns nil' do
           pn = MiniPhone::PhoneNumber.new(nil)
