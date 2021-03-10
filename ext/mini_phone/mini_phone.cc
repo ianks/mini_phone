@@ -308,17 +308,22 @@ extern "C" VALUE rb_phone_number_region_code(VALUE self) {
   if (rb_ivar_defined(self, rb_intern("@region_code"))) {
     return rb_iv_get(self, "@region_code");
   }
+  VALUE input_region_code = rb_iv_get(self, "@input_region_code");
 
-  PhoneNumberInfo *phone_number_info;
-  std::string code;
-  TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
-  const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
+  if (NIL_P(input_region_code)) {
+    PhoneNumberInfo *phone_number_info;
+    std::string code;
+    TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
+    const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number->country_code(), &code);
+    phone_util.GetRegionCodeForCountryCode(phone_number_info->phone_number->country_code(), &code);
 
-  VALUE result = rb_str_new(code.c_str(), code.size());
+    VALUE result = rb_str_new(code.c_str(), code.size());
 
-  return rb_iv_set(self, "@region_code", result);
+    return rb_iv_set(self, "@region_code", result);
+  } else {
+    return rb_iv_set(self, "@region_code", input_region_code);
+  }
 }
 
 extern "C" VALUE rb_phone_number_match_eh(VALUE self, VALUE other) {
@@ -471,9 +476,14 @@ extern "C" VALUE rb_phone_number_valid_eh(VALUE self) {
 
   const PhoneNumberUtil &phone_util(*PhoneNumberUtil::GetInstance());
 
-  if (!rb_str_equal(input_region_code, rb_str_new_literal("ZZ")) &&
-      !rb_str_equal(rb_phone_number_region_code(self), input_region_code)) {
-    return rb_iv_set(self, "@valid", Qfalse);
+  if (!rb_str_equal(input_region_code, rb_str_new_literal("ZZ"))) {
+    std::string country_code(RSTRING_PTR(input_region_code), RSTRING_LEN(input_region_code));
+
+    if (phone_util.IsValidNumberForRegion(*phone_number_info->phone_number, country_code)) {
+      return rb_iv_set(self, "@valid", Qtrue);
+    } else {
+      return rb_iv_set(self, "@valid", Qfalse);
+    }
   }
 
   if (phone_util.IsValidNumber(*phone_number_info->phone_number)) {

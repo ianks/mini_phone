@@ -281,6 +281,15 @@ RSpec.describe MiniPhone::PhoneNumber do
     end
   end
 
+  context 'integration' do
+    it 'returns true for a valid Canadian phone number (issue #7)' do
+      pn = MiniPhone::PhoneNumber.new('8255649738', 'CA')
+
+      expect(pn.valid?).to eq(true)
+      expect(pn.region_code).to eq('CA')
+    end
+  end
+
   it 'has an accurate mem_size' do
     require 'objspace'
 
