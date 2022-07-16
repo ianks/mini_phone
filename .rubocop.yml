@@ -21,3 +21,4 @@ Metrics/BlockLength:
     - spec/**/*
     - Rakefile
     - Gemfile
+    - mini_phone.gemspec

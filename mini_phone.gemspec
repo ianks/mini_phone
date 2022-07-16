@@ -36,4 +36,9 @@ Gem::Specification.new do |spec|
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
   spec.extensions    = ['ext/mini_phone/extconf.rb']
+
+  # Security
+  spec.metadata['rubygems_mfa_required'] = 'true'
+  spec.cert_chain = ['certs/ianks.pem']
+  spec.signing_key = File.expand_path('~/.ssh/gem-private_key.pem') if $PROGRAM_NAME.end_with?('gem')
 end
