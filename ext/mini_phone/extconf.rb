@@ -4,6 +4,14 @@
 
 require 'mkmf'
 
+conf = RbConfig::MAKEFILE_CONFIG
+
+if conf['target_cpu'] == 'arm64' && conf['target_os'].start_with?('darwin')
+  $LIBPATH << '/opt/homebrew/lib'
+  $INCFLAGS << ' -I/opt/homebrew/include '
+  $CXXFLAGS << ' -I/opt/homebrew/include '
+end
+
 unless have_library('phonenumber')
   abort <<~MSG
 
@@ -31,7 +39,7 @@ end
 
 dir_config('mini_phone')
 
-$CXXFLAGS += ' -std=c++11 -ofast '
+$CXXFLAGS += ' -std=c++14 -ofast '
 
 create_makefile('mini_phone/mini_phone')
 

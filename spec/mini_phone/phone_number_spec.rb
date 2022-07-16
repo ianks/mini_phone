@@ -283,7 +283,7 @@ RSpec.describe MiniPhone::PhoneNumber do
 
   context 'integration' do
     it 'returns true for a valid Canadian phone number (issue #7)' do
-      pn = MiniPhone::PhoneNumber.new('8255649738', 'CA')
+      pn = MiniPhone::PhoneNumber.new('4378865216', 'CA')
 
       expect(pn.valid?).to eq(true)
       expect(pn.region_code).to eq('CA')

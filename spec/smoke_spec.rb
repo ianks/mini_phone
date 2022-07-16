@@ -24,7 +24,6 @@ RSpec.describe 'Smoke testing' do
     curr_bytes = GetProcessMem.new.mb
 
     expect(curr_bytes).to be_within(3).of(prev_bytes)
-    expect(curr_bytes).to be < 50
   end
 
   it 'does not cause any segfaults' do
