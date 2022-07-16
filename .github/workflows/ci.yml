@@ -25,7 +25,7 @@ jobs:
 
       - name: Install dependencies (system)
         if: ${{ matrix.os == 'macos-latest' }}
-        run: brew install --build-from-source libphonenumber && brew link libphonenumber
+        run: brew install libphonenumber
 
       - name: Install dependencies (ruby)
         run: gem install bundler && bundle install --jobs 4 --retry 3
