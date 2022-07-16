@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies (system)
         if: ${{ matrix.os == 'ubuntu-latest' }}
-        run: sudo apt-get -yqq install libphonenumber-dev
+        run: sudo apt-get -yqq install libphonenumber-dev libphonenumber8
 
       - name: Install dependencies (system)
         if: ${{ matrix.os == 'macos-latest' }}
