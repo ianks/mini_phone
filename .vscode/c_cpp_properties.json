@@ -17,6 +17,20 @@
       "cppStandard": "c++14",
       "intelliSenseMode": "macos-clang-arm64",
       "compilerArgs": []
+    },
+    {
+      "name": "Codespace",
+      "includePath": [
+        "${workspaceFolder}/ext/mini_phone",
+        "/home/codespace/.ruby/current/include/ruby-2.7.0/",
+        "/home/codespace/.ruby/current/include/ruby-2.7.0/x86_64-linux"
+      ],
+      "defines": [],
+      "macFrameworkPath": [],
+      "compilerPath": "/usr/bin/gcc",
+      "cStandard": "c17",
+      "cppStandard": "c++14",
+      "compilerArgs": []
     }
   ],
   "version": 4
