@@ -7,8 +7,6 @@ require 'rake/extensiontask'
 
 RSpec::Core::RakeTask.new(:spec)
 
-task build: :compile
-
 task default: %i[clobber compile spec lint]
 
 spec = Gem::Specification.load(File.expand_path('mini_phone.gemspec', __dir__))
@@ -41,43 +39,8 @@ task deploy: :default do
   sh 'code -w ./lib/mini_phone/version.rb'
   version = `ruby -r ./lib/mini_phone/version.rb -e 'print MiniPhone::VERSION'`.strip
   sh "git commit -am 'Bump to v#{version} :confetti_ball:'"
-  sh 'gem_push=no bundle exec rake release'
+  sh 'bundle exec rake release'
 end
-
-namespace :publish do
-  def push_to_github_registry(gem)
-    puts "Pushing #{gem} to GitHub Package Registry"
-    sh "gem push #{gem} --host https://rubygems.pkg.github.com/ianks --key github"
-    true
-  rescue StandardError
-    warn 'Could not publish to Github Package Registry'
-    false
-  end
-
-  def push_to_rubygems(gem)
-    puts "Pushing #{gem} to rubygems"
-    sh "gem push #{gem}"
-    true
-  rescue StandardError
-    warn 'Could not publish to rubygems'
-    false
-  end
-
-  task native: %i[native gem] do
-    g = "./pkg/mini_phone-#{MiniPhone::VERSION}-#{Gem::Platform.new(RUBY_PLATFORM)}.gem"
-
-    push_to_rubygems(g)
-  end
-
-  task non_native: [:gem] do
-    g = "./pkg/mini_phone-#{MiniPhone::VERSION}.gem"
-
-    push_to_rubygems(g)
-    push_to_github_registry(g)
-  end
-end
-
-desc 'Run valgrind test'
 
 namespace :debug do
   desc 'Plot memory'
@@ -85,6 +48,7 @@ namespace :debug do
     sh 'debug/memory_plot/plot.sh'
   end
 
+  desc 'Run valgrind test'
   task :valgrind do
     sh 'docker build --tag mini_phone_dev -f Dockerfile.dev .'
     args = '--tool=memcheck --num-callers=15 --partial-loads-ok=yes --undef-value-errors=no'
