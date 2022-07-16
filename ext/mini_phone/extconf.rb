@@ -39,7 +39,7 @@ end
 
 dir_config('mini_phone')
 
-$CXXFLAGS += ' -std=c++11 -ofast '
+$CXXFLAGS += ' -std=c++14 -ofast '
 
 create_makefile('mini_phone/mini_phone')
 
