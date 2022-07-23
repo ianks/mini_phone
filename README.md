@@ -121,6 +121,20 @@ TelephoneNumber: e164:      228.8 i/s - 179.99x  (± 0.00) slower
    gem install mini_phone
    ```
 
+### Installation on Heroku
+
+1. In addition to the steps above add the [apt buildpack](https://github.com/heroku/heroku-buildpack-apt) to your Heroku app:
+
+   ```sh
+   heroku buildpacks:add --index 1 heroku-community/apt
+   ```
+
+2. Create Aptfile in your repo with the following content:
+   
+   ```
+   libphonenumber-dev
+   ```
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then,
