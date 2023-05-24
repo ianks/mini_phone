@@ -28,6 +28,7 @@ end
 
 task :lint do
   sh 'bundle exec rubocop'
+  sh 'clang-format --dry-run -i ext/**/*.{h,cc}'
 end
 
 task :format do

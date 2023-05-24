@@ -14,7 +14,9 @@ static VALUE rb_cPhoneNumber;
 static RepeatedPtrField<NumberFormat> raw_national_format;
 static RepeatedPtrField<NumberFormat> dasherized_national_format;
 
-extern "C" struct PhoneNumberInfo { PhoneNumber *phone_number; };
+extern "C" struct PhoneNumberInfo {
+  PhoneNumber *phone_number;
+};
 
 extern "C" size_t phone_number_info_size(const void *data) { return sizeof(PhoneNumberInfo); }
 

@@ -18,6 +18,7 @@ jobs:
       - uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
+          bundler-cache: true
 
       - name: Install dependencies (system)
         if: ${{ matrix.os == 'ubuntu-latest' }}
@@ -27,14 +28,5 @@ jobs:
         if: ${{ matrix.os == 'macos-latest' }}
         run: brew install libphonenumber
 
-      - name: Install dependencies (ruby)
-        run: gem install bundler && bundle install --jobs 4 --retry 3
-
-      - name: Compile
-        run: bundle exec rake compile
-
-      - name: RSpec
-        run: bundle exec rspec --format RSpec::Github::Formatter --format documentation
-
-      - name: Rubocop
-        run: bundle exec rubocop --format github
+      - name: Rake
+        run: bundle exec rake
