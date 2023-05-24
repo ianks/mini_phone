@@ -5,6 +5,8 @@ require 'rspec/core/rake_task'
 require 'rubygems/package_task'
 require 'rake/extensiontask'
 
+CXX_FILES = FileList['ext/**/*.{c,cc,cpp,cxx,h}']
+
 RSpec::Core::RakeTask.new(:spec)
 
 task default: %i[clobber compile spec lint]
@@ -29,12 +31,12 @@ end
 task :lint do
   require 'mkmf'
   sh 'bundle exec rubocop'
-  sh 'clang-format --dry-run -i ext/**/*.{h,cc}' if find_executable('clang-format')
+  sh 'clang-format', '--dry-run', '-i', *CXX_FILES if find_executable('clang-format')
 end
 
 task :format do
   sh 'bundle exec rubocop -A'
-  sh 'clang-format -i ext/**/*.{h,cc}'
+  sh 'clang-format', '--dry-run', '-i', *CXX_FILES
 end
 
 task deploy: :default do
