@@ -27,8 +27,9 @@ task bench: %i[clobber compile] do
 end
 
 task :lint do
+  require 'mkmf'
   sh 'bundle exec rubocop'
-  sh 'clang-format --dry-run -i ext/**/*.{h,cc}'
+  sh 'clang-format --dry-run -i ext/**/*.{h,cc}' if find_executable('clang-format')
 end
 
 task :format do
