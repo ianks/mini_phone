@@ -14,7 +14,7 @@ Gem::Specification.new do |spec|
   MSG
   spec.homepage      = 'https://github.com/ianks/mini_phone'
   spec.license       = 'MIT'
-  spec.required_ruby_version = Gem::Requirement.new('>= 2.5.0')
+  spec.required_ruby_version = Gem::Requirement.new('>= 3.0.0')
 
   spec.platform = Gem::Platform::RUBY
 

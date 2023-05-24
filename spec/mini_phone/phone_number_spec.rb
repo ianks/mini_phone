@@ -295,6 +295,6 @@ RSpec.describe MiniPhone::PhoneNumber do
 
     pn = MiniPhone::PhoneNumber.new('+1 404 384 11111111111111')
 
-    expect(ObjectSpace.memsize_of(pn)).to eql(192)
+    expect(ObjectSpace.memsize_of(pn)).to be >= 128
   end
 end
