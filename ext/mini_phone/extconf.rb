@@ -12,7 +12,7 @@ if conf['target_cpu'] == 'arm64' && conf['target_os'].start_with?('darwin')
   $CXXFLAGS << ' -I/opt/homebrew/include '
 end
 
-unless have_library('phonenumber')
+unless have_library('phonenumber') && have_library('protobuf')
   abort <<~MSG
 
     ,----------------------------------------------------------------------,
@@ -38,8 +38,8 @@ unless have_library('phonenumber')
 end
 
 dir_config('mini_phone')
-
-$CXXFLAGS += ' -std=c++17 -ofast '
+append_cppflags('-O3')
+$CXXFLAGS << ' -std=c++17 ' unless $CXXFLAGS.include?('-std=c++')
 
 create_makefile('mini_phone/mini_phone')
 
