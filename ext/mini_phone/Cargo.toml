@@ -1,0 +1,15 @@
+[package]
+name = "mini_phone"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[build-dependencies]
+rb-sys-env = "0.1.2"
+
+[dependencies]
+magnus = { version = "0.6.2", features = ["rb-sys"] }
+phonenumber = "0.3.3"
+rb-sys = { version = "0.9.82", features = ["stable-api-compiled-fallback"] }

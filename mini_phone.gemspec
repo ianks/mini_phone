@@ -41,4 +41,6 @@ Gem::Specification.new do |spec|
   spec.metadata['rubygems_mfa_required'] = 'true'
   spec.cert_chain = ['certs/ianks.pem']
   spec.signing_key = File.expand_path('~/.ssh/gem-private_key.pem') if $PROGRAM_NAME.end_with?('gem')
+
+  spec.add_dependency 'rb_sys', '~> 0.9.82'
 end

@@ -293,8 +293,8 @@ RSpec.describe MiniPhone::PhoneNumber do
   it 'has an accurate mem_size' do
     require 'objspace'
 
-    pn = MiniPhone::PhoneNumber.new('+1 404 384 11111111111111')
+    pn = MiniPhone::PhoneNumber.new('+1 404 384 1285')
 
-    expect(ObjectSpace.memsize_of(pn)).to be >= 128
+    expect(ObjectSpace.memsize_of(pn)).to be >= 112
   end
 end

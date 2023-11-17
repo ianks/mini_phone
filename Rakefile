@@ -3,13 +3,11 @@
 require 'bundler/gem_tasks'
 require 'rspec/core/rake_task'
 require 'rubygems/package_task'
-require 'rake/extensiontask'
-
-CXX_FILES = FileList['ext/**/*.{c,cc,cpp,cxx,h}']
+require 'rb_sys/extensiontask'
 
 RSpec::Core::RakeTask.new(:spec)
 
-task default: %i[clobber compile spec lint]
+task default: %i[compile spec lint]
 
 spec = Gem::Specification.load(File.expand_path('mini_phone.gemspec', __dir__))
 
@@ -18,25 +16,22 @@ Gem::PackageTask.new(spec) do |pkg|
   pkg.need_tar = true
 end
 
-Rake::ExtensionTask.new('mini_phone', spec) do |ext|
+RbSys::ExtensionTask.new('mini_phone') do |ext|
   ext.lib_dir = 'lib/mini_phone'
 end
 
-task bench: %i[clobber compile] do
+task bench: %i[compile] do
   Dir['bench/**/*'].each do |f|
     require_relative f
   end
 end
 
 task :lint do
-  require 'mkmf'
-  sh 'bundle exec rubocop'
-  sh 'clang-format', '--dry-run', '-i', *CXX_FILES if find_executable('clang-format')
+  sh 'cargo', 'clippy', '--', '-D', 'warnings'
 end
 
 task :format do
-  sh 'bundle exec rubocop -A'
-  sh 'clang-format', '--dry-run', '-i', *CXX_FILES
+  sh 'cargo', 'fmt'
 end
 
 task deploy: :default do

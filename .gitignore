@@ -18,3 +18,8 @@ Gemfile.lock
 vendor/cache/
 *.gem
 valgrind-out.txt
+
+
+# Added by cargo
+
+/target

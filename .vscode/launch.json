@@ -18,7 +18,7 @@
         "CXXFLAGS": "-g"
       },
       "cwd": "${workspaceFolder}",
-      "sourceLanguages": ["cpp"]
+      "sourceLanguages": ["rust"]
     }
   ]
 }
