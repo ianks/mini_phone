@@ -417,15 +417,15 @@ extern "C" VALUE rb_phone_number_area_code(VALUE self) {
   TypedData_Get_Struct(self, PhoneNumberInfo, &phone_number_info_type, phone_number_info);
 
   PhoneNumber *number = phone_number_info->phone_number;
-  string national_significant_number;
+  std::string national_significant_number;
   phone_util.GetNationalSignificantNumber(*number, &national_significant_number);
-  string area_code;
-  string subscriber_number;
+  std::string area_code;
+  std::string subscriber_number;
 
   int area_code_length = phone_util.GetLengthOfGeographicalAreaCode(*number);
   if (area_code_length > 0) {
     area_code = national_significant_number.substr(0, area_code_length);
-    subscriber_number = national_significant_number.substr(area_code_length, string::npos);
+    subscriber_number = national_significant_number.substr(area_code_length, std::string::npos);
   } else {
     area_code = "";
     subscriber_number = national_significant_number;
